@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kyh.system.mapper.SyainMainMapper">
+
+	<resultMap id="BaseResultMap" type="com.kyh.system.model.SyainMain">
+		<id column="syain_id" jdbcType="INTEGER" property="syainId" />
+		<result column="employeecode" jdbcType="VARCHAR" property="employeecode" />
+		<!-- 基本情報 -->
+		<result column="first_name_kanji" jdbcType="VARCHAR" property="firstNameKanji" />
+		<result column="last_name_kanji" jdbcType="VARCHAR" property="lastNameKanji" />
+		<result column="first_name_kana" jdbcType="VARCHAR" property="firstNameKana" />
+		<result column="last_name_kana" jdbcType="VARCHAR" property="lastNameKana" />
+		<result column="first_name_eigo" jdbcType="VARCHAR" property="firstNameEigo" />
+		<result column="last_name_eigo" jdbcType="VARCHAR" property="lastNameEigo" />
+		<result column="seibetu" jdbcType="INTEGER" property="seibetu" />
+		<result column="tanjyobi" jdbcType="DATE" property="tanjyobi" />
+		<result column="kokuseki" jdbcType="INTEGER" property="kokuseki" />
+		<result column="syussinn" jdbcType="VARCHAR" property="syussinn" />
+		<result column="haigusya" jdbcType="INTEGER" property="haigusya" />
+		<!-- パスポート・ビザ・在留情報 -->
+		<result column="passport_num" jdbcType="VARCHAR" property="passportNum" />
+		<result column="passport_end_date" jdbcType="DATE" property="passportEndDate" />
+		<result column="visa_kikan" jdbcType="INTEGER" property="visaKikan" />
+		<result column="visa_end_date" jdbcType="DATE" property="visaEndDate" />
+		<result column="zairyu_sikaku" jdbcType="INTEGER" property="zairyuSikaku" />
+		<result column="kojin_num" jdbcType="VARCHAR" property="kojinNum" />
+		<result column="zairyu_num" jdbcType="VARCHAR" property="zairyuNum" />
+		<result column="rainiti_date" jdbcType="DATE" property="rainitiDate" />
+		<!-- 会社・就業情報 -->
+		<result column="syozoku_kaisya" jdbcType="INTEGER" property="syozokuKaisya" />
+		<result column="nyuusya_date" jdbcType="DATE" property="nyuusyaDate" />
+		<result column="taisya_date" jdbcType="DATE" property="taisyaDate" />
+		<result column="syokugyo_kind" jdbcType="INTEGER" property="syokugyoKind" />
+		<result column="gyumu_nensu" jdbcType="FLOAT" property="gyumuNensu" />
+		<!-- 住所・連絡先 -->
+		<result column="yuubin" jdbcType="VARCHAR" property="yuubin" />
+		<result column="jyusyo_1" jdbcType="VARCHAR" property="jyusyo1" />
+		<result column="jyusyo_2" jdbcType="VARCHAR" property="jyusyo2" />
+		<result column="moyori_eki" jdbcType="VARCHAR" property="moyoriEki" />
+		<result column="tel" jdbcType="VARCHAR" property="tel" />
+		<result column="email" jdbcType="VARCHAR" property="email" />
+		<result column="wechat" jdbcType="VARCHAR" property="wechat" />
+		<result column="line" jdbcType="VARCHAR" property="line" />
+		<result column="bokoku_jyusyo" jdbcType="VARCHAR" property="bokokuJyusyo" />
+		<result column="bokoku_kinnkyuu_rennraku" jdbcType="VARCHAR" property="bokokuKinnkyuuRennraku" />
+		<!-- 学歴情報 -->
+		<result column="saisyuu_gakureki" jdbcType="INTEGER" property="saisyuuGakureki" />
+		<result column="gakkou_name" jdbcType="VARCHAR" property="gakkouName" />
+		<result column="sennmom_name" jdbcType="VARCHAR" property="sennmomName" />
+		<result column="sotugyo_date" jdbcType="DATE" property="sotugyoDate" />
+		<!-- ITスキル情報 -->
+		<result column="it_os" jdbcType="VARCHAR" property="itOs" />
+		<result column="it_gengo" jdbcType="VARCHAR" property="itGengo" />
+		<result column="it_db" jdbcType="VARCHAR" property="itDb" />
+		<result column="it_web_server" jdbcType="VARCHAR" property="itWebServer" />
+		<result column="it_fw" jdbcType="VARCHAR" property="itFw" />
+		<result column="it_other" jdbcType="VARCHAR" property="itOther" />
+		<result column="it_bikou" jdbcType="VARCHAR" property="itBikou" />
+		<!-- 給与・口座情報 -->
+		<result column="kinyukikan_code" jdbcType="VARCHAR" property="kinyukikanCode" />
+		<result column="kinyukikan_name" jdbcType="VARCHAR" property="kinyukikanName" />
+		<result column="siten_code" jdbcType="VARCHAR" property="sitenCode" />
+		<result column="siten_name" jdbcType="VARCHAR" property="sitenName" />
+		<result column="kouza_kind" jdbcType="INTEGER" property="kouzaKind" />
+		<result column="kouza_num" jdbcType="VARCHAR" property="kouzaNum" />
+		<result column="meigi_name" jdbcType="VARCHAR" property="meigiName" />
+		<!-- その他 -->
+		<result column="bikou" jdbcType="VARCHAR" property="bikou" />
+		<result column="comment" jdbcType="VARCHAR" property="comment" />
+		<result column="delete_flag" jdbcType="INTEGER" property="deleteFlag" />
+	</resultMap>
+
+	<!--
+		社員更新画面の表示に必要なフィールドのみを取得する。
+		delete_flag = 0 で論理削除済みを除外する。
+	-->
+	<select id="selectEmployeeForEdit"
+		parameterType="java.lang.Integer"
+		resultMap="BaseResultMap">
+		SELECT
+			employeecode,
+			first_name_kanji,   last_name_kanji,
+			first_name_kana,    last_name_kana,
+			first_name_eigo,    last_name_eigo,
+			seibetu,            tanjyobi,
+			kokuseki,           syussinn,         haigusya,
+			passport_num,       passport_end_date,
+			visa_kikan,         visa_end_date,    zairyu_sikaku,
+			kojin_num,          zairyu_num,       rainiti_date,
+			syozoku_kaisya,     nyuusya_date,     taisya_date,
+			syokugyo_kind,      gyumu_nensu,
+			yuubin,             jyusyo_1,         jyusyo_2,
+			moyori_eki,         tel,              email,
+			wechat,             line,
+			bokoku_jyusyo,      bokoku_kinnkyuu_rennraku,
+			saisyuu_gakureki,   gakkou_name,      sennmom_name,
+			sotugyo_date,
+			it_os,     it_gengo,  it_db,
+			it_web_server,      it_fw,            it_other,     it_bikou,
+			bikou,              comment
+		FROM syain_main
+		WHERE syain_id = #{syainId}
+		AND delete_flag = 0
+	</select>
+
+	<!-- 社員登録画面で使用するフィールドを1クエリでINSERTする -->
+	<insert id="insertEmployee" parameterType="com.kyh.system.model.SyainMain"
+			useGeneratedKeys="true" keyProperty="syainId" keyColumn="syain_id">
+		INSERT INTO syain_main (
+			employeecode,
+			last_name_kanji,  first_name_kanji,
+			last_name_kana,   first_name_kana,
+			first_name_eigo,  last_name_eigo,
+			seibetu,          syozoku_kaisya,
+			nyuusya_date,     taisya_date,
+			syokugyo_kind,    it_os,
+			delete_flag,
+			kinyukikan_code,  kinyukikan_name,
+			siten_code,       siten_name,
+			kouza_kind,       kouza_num,        meigi_name
+		) VALUES (
+			#{employeecode},
+			#{lastNameKanji},  #{firstNameKanji},
+			#{lastNameKana},   #{firstNameKana},
+			#{firstNameEigo},  #{lastNameEigo},
+			#{seibetu},        #{syozokuKaisya},
+			#{nyuusyaDate},    #{taisyaDate},
+			#{syokugyoKind},   #{itOs},
+			#{deleteFlag},
+			#{kinyukikanCode}, #{kinyukikanName},
+			#{sitenCode},      #{sitenName},
+			#{kouzaKind},      #{kouzaNum},      #{meigiName}
+		)
+	</insert>
+
+	<!--
+		社員更新画面で変更されたフィールドのみ UPDATE する。
+		Map のキー存在有無（containsKey）で更新対象を判定するため、null への変更も正しく反映される。
+	-->
+	<update id="updateEmployee" parameterType="map">
+		UPDATE syain_main
+		<set>
+			<if test="_parameter.containsKey('lastNameKanji')">last_name_kanji  = #{lastNameKanji},</if>
+			<if test="_parameter.containsKey('firstNameKanji')">first_name_kanji = #{firstNameKanji},</if>
+			<if test="_parameter.containsKey('lastNameKana')">last_name_kana   = #{lastNameKana},</if>
+			<if test="_parameter.containsKey('firstNameKana')">first_name_kana  = #{firstNameKana},</if>
+			<if test="_parameter.containsKey('firstNameEigo')">first_name_eigo  = #{firstNameEigo},</if>
+			<if test="_parameter.containsKey('lastNameEigo')">last_name_eigo   = #{lastNameEigo},</if>
+			<if test="_parameter.containsKey('seibetu')">seibetu          = #{seibetu},</if>
+			<if test="_parameter.containsKey('syozokuKaisya')">syozoku_kaisya   = #{syozokuKaisya},</if>
+			<if test="_parameter.containsKey('nyuusyaDate')">nyuusya_date     = #{nyuusyaDate},</if>
+			<if test="_parameter.containsKey('taisyaDate')">taisya_date      = #{taisyaDate},</if>
+			<if test="_parameter.containsKey('syokugyoKind')">syokugyo_kind    = #{syokugyoKind},</if>
+		</set>
+		WHERE syain_id = #{syainId}
+	</update>
+
+	<!-- 社員IDを指定して論理削除する（delete_flag を 1 に設定） -->
+	<update id="logicalDeleteBySyainId" parameterType="java.lang.Integer">
+		UPDATE syain_main SET delete_flag = 1 WHERE syain_id = #{syainId}
+	</update>
+
+	<!-- 社員一覧検索。tg_setting を LEFT JOIN して会社名・職業名を取得する -->
+	<select id="selectEmployeeSearchList"
+		parameterType="com.kyh.system.dto.EmployeeSearchDto"
+		resultType="com.kyh.system.dto.EmployeeListDto">
+		SELECT
+			sm.syain_id         AS syainId,
+			sm.employeecode,
+			sm.syozoku_kaisya   AS syozokuKaisya,
+			sm.first_name_kanji AS firstNameKanji,
+			sm.last_name_kanji  AS lastNameKanji,
+			sm.seibetu,
+			sm.syokugyo_kind    AS syokugyoKind,
+			sm.nyuusya_date     AS nyuusyaDate,
+			sm.taisya_date      AS taisyaDate,
+			tc.value1           AS companyName,
+			tj.value1           AS jobTypeName
+		FROM syain_main sm
+		LEFT JOIN tg_setting tc
+			ON  tc.category1 = 1
+			AND tc.category3 = 1
+			AND tc.category2 = sm.syozoku_kaisya
+		LEFT JOIN tg_setting tj
+			ON  tj.category1 = 3
+			AND tj.category2 = 4
+			AND tj.category3 = sm.syokugyo_kind
+		WHERE sm.delete_flag = 0
+
+		<if test="syozokuKaisya != null and syozokuKaisya != 0">
+			AND sm.syozoku_kaisya = #{syozokuKaisya}
+		</if>
+
+		<if test="employeeName != null and employeeName != ''">
+			AND CONCAT(sm.last_name_kanji, sm.first_name_kanji) LIKE CONCAT('%', #{employeeName}, '%')
+		</if>
+
+		<if test="syokugyoKind != null and syokugyoKind != 0">
+			AND sm.syokugyo_kind = #{syokugyoKind}
+		</if>
+
+		<choose>
+			<when test="working == true and notWorking != true">
+				AND sm.taisya_date IS NULL
+			</when>
+			<when test="notWorking == true and working != true">
+				AND sm.taisya_date IS NOT NULL
+			</when>
+			<!-- working == true and notWorking == true → 条件なし（全検索） -->
+		</choose>
+		ORDER BY sm.last_name_kanji, sm.first_name_kanji
+	</select>
+
+</mapper>

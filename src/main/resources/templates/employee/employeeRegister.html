@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>社員登録</title>
+	<link rel="stylesheet" th:href="@{/employee/employee.css}">
+	<script src="https://zipaddr.github.io/bankauto0.js" charset="UTF-8"></script>
+</head>
+
+<body>
+	<header th:replace="~{employee/header :: header('社員管理画面', '/employee/list')}"></header>
+
+	<div class="container">
+		<div class="ribbon">社員登録</div>
+		<div th:if="${errorMessage}" class="message-error" th:text="${errorMessage}"></div>
+		<div th:if="${validationErrors != null and !#lists.isEmpty(validationErrors)}" class="message-error">
+			<p th:each="err : ${validationErrors}" th:text="${err}"></p>
+		</div>
+
+		<form class="detail-form" th:action="@{/employee/register}" th:object="${employee}" method="post" id="employeeForm">
+			<div class="section-title">■ 基本情報</div>
+			<fieldset th:disabled="${!canEditBasicInfo}" style="border:none;padding:0;margin:0;">
+				<table class="employee-table">
+					<tr><th>社員コード <span class="required">*</span></th><td><input type="text" th:field="*{employeecode}" maxlength="10"></td></tr>
+					<tr><th>社員名(漢字) <span class="required">*</span></th><td>姓 <input type="text" th:field="*{lastNameKanji}" maxlength="15"> 名 <input type="text" th:field="*{firstNameKanji}" maxlength="15"></td></tr>
+					<tr><th>社員名(カタカナ) <span class="required">*</span></th><td>セイ <input type="text" th:field="*{lastNameKana}" maxlength="15"> メイ <input type="text" th:field="*{firstNameKana}" maxlength="15"></td></tr>
+					<tr><th>社員名(英語) <span class="required">*</span></th><td>first name <input type="text" th:field="*{firstNameEigo}" maxlength="30"> last name <input type="text" th:field="*{lastNameEigo}" maxlength="30"></td></tr>
+					<tr><th>性別</th><td><label><input type="radio" th:field="*{seibetu}" value="1"> 男</label><label><input type="radio" th:field="*{seibetu}" value="2"> 女</label></td></tr>
+				</table>
+			</fieldset>
+
+			<div class="section-title">■ 会社関連情報</div>
+			<fieldset th:disabled="${!canEditBasicInfo}" style="border:none;padding:0;margin:0;">
+				<table class="employee-table">
+					<tr><th>所属会社 <span class="required">*</span></th><td><select th:field="*{syozokuKaisya}"><option value="">-- 選択 --</option><option th:each="item : ${companyList}" th:value="${item.code}" th:text="${item.name}"></option></select></td></tr>
+					<tr><th>入社日 <span class="required">*</span></th><td><input type="date" th:field="*{nyuusyaDate}" class="date-input"></td></tr>
+					<tr><th>退社日</th><td><input type="text" id="taisyaDate" name="taisyaDate" th:value="${employee.taisyaDate != null ? #temporals.format(employee.taisyaDate, 'yyyy-MM-dd') : ''}" maxlength="10"> ※YYYY-MM-DD</td></tr>
+					<tr><th>職業種類 <span class="required">*</span></th><td><select th:field="*{syokugyoKind}"><option value="">-- 選択 --</option><option th:each="item : ${jobTypeList}" th:value="${item.code}" th:text="${item.name}"></option></select></td></tr>
+				</table>
+			</fieldset>
+
+			<div th:if="${canSeeSalary}">
+				<div class="section-title">■ 給与関連情報</div>
+				<input type="hidden" id="bankauto_param" value="bkc=kinyukikan_code,bkn=kinyukikan_name,brc=siten_code,brn=siten_name">
+				<table class="employee-table salary-table">
+					<tr><th>金融機関コード</th><th>金融機関名</th><th>支店名コード</th><th>支店名</th><th>口座種類</th><th>口座番号</th><th>名義人</th></tr>
+					<tr>
+						<td><input type="text" id="kinyukikan_code" th:field="*{kinyukikanCode}" maxlength="10"></td>
+						<td><input type="text" id="kinyukikan_name" th:field="*{kinyukikanName}" maxlength="50"></td>
+						<td><input type="text" id="siten_code" th:field="*{sitenCode}" maxlength="10"></td>
+						<td><input type="text" id="siten_name" th:field="*{sitenName}" maxlength="50"></td>
+						<td><select th:field="*{kouzaKind}"><option value="1">普通</option><option value="2">当座</option><option value="3">貯蓄</option></select></td>
+						<td><input type="text" th:field="*{kouzaNum}" maxlength="10"></td>
+						<td><input type="text" th:field="*{meigiName}" maxlength="50"></td>
+					</tr>
+				</table>
+			</div>
+
+			<div th:if="${canSeeTechSkills}">
+				<div class="section-title">■ 技術経験</div>
+				<p class="tech-legend">◎：実務経験１年以上 ／ ○：実務経験有り ／ △：知識有り（クリックで切り替え）</p>
+				<table class="tech-table">
+					<tr th:each="chunk, chunkStat : ${itOsChunks}">
+						<th th:if="${chunkStat.first}" th:attr="rowspan=${#lists.size(itOsChunks)}">ＯＳ</th>
+						<td th:each="item : ${chunk}" th:data-id="${item.code}" th:data-group="itOsValues" class="tech-click-cell">
+							<div class="tech-cell"><span class="tech-name" th:text="${item.name}"></span><span class="tech-badge"></span></div>
+							<input type="hidden" th:name="itOsValues" value="">
+						</td>
+						<td class="empty" th:each="i : ${#numbers.sequence(1, 5 - chunk.size())}" th:if="${chunk.size() < 5}"></td>
+					</tr>
+				</table>
+			</div>
+
+			<div class="action-area" th:if="${canEditBasicInfo}"><button type="submit">登録</button></div>
+		</form>
+	</div>
+
+
+	<script th:inline="javascript">
+		var canEditTechSkills = /*[[${canEditTechSkills}]]*/ false;
+	</script>
+	<script th:src="@{/employee/employeeValidation.js}"></script>
+</body>
+
+</html>

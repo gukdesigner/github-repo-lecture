@@ -3,44 +3,78 @@
         PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 <generatorConfiguration>
-	<!-- データベースドライバ: ローカルハードディスク上のデータベースドライバパッケージを選択してください -->
+
+	<!-- [수정01] PostgreSQL JDBC 드라이버 경로 지정 - 기존: PostgreSQL 드라이버 미설정 상태 - 변경: 
+		로컬 Maven 리포지토리(.m2)의 postgresql-42.7.8.jar 경로로 명시 - 이유: MBG(MyBatis Generator) 
+		실행 시 DB 접속에 사용할 JDBC 드라이버를 클래스패스에 직접 등록해야 하므로, 실제 파일 경로를 지정 -->
 	<classPathEntry
-		location="C:\Users\Administrator\.m2\repository\com\mysql\mysql-connector-j\8.0.33\mysql-connector-j-8.0.33.jar" />
-	<context id="MySQLContext" targetRuntime="MyBatis3"
+		location="C:\\Users\\saogi\\.m2\\repository\\org\\postgresql\\postgresql\\42.7.8\\postgresql-42.7.8.jar" />
+
+	<context id="PostgresContext" targetRuntime="MyBatis3"
 		defaultModelType="flat">
+
 		<commentGenerator>
 			<property name="suppressDate" value="true" />
-			<!-- 自動生成されるコメントを除去するかどうか true: はい、 false: いいえ -->
+			<!-- 자동 생성 주석 제거 여부: false = 주석 유지 -->
 			<property name="suppressAllComments" value="false" />
 		</commentGenerator>
-		<!-- データベース接続URL、ユーザー名、パスワード -->
-		<jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
-			connectionURL="jdbc:mysql://localhost:3306/testdb" userId="testuser"
-			password="test">
+
+		<!-- [수정02] JDBC 접속 URL 변경 및 PostgreSQL 전용 프로퍼티 추가 - 기존: connectionURL에 
+			nullCatalogMeansCurrent=true 쿼리 파라미터로 포함 - 변경: connectionURL에서 쿼리 파라미터 제거, 
+			동일 설정을 <property> 태그로 분리 - 이유: PostgreSQL은 여러 스키마(catalog)를 가질 수 있어, 이 설정 
+			없이는 MBG가 불필요한 시스템 테이블까지 읽어와 중복 생성 오류가 발생함. <property> 방식이 PostgreSQL JDBC 
+			드라이버와의 호환성에서 더 안정적 -->
+		<jdbcConnection driverClass="org.postgresql.Driver"
+			connectionURL="jdbc:postgresql://localhost:5432/postgres"
+			userId="postgres" password="postgres">
+			<!-- 현재 접속 중인 DB(catalog)의 테이블 정보만 가져오도록 제한 -->
+			<property name="nullCatalogMeansCurrent" value="true" />
 		</jdbcConnection>
+
 		<javaTypeResolver>
+			<!-- NUMERIC/DECIMAL 타입을 BigDecimal 대신 Integer/Long 등으로 매핑 허용 -->
 			<property name="forceBigDecimals" value="false" />
 		</javaTypeResolver>
-		<!-- モデルのパッケージ名と位置 -->
+
+		<!-- 생성될 모델(VO/Entity) 클래스의 패키지 및 출력 경로 -->
 		<javaModelGenerator
 			targetPackage="com.kyh.system.model" targetProject="src/main/java">
 			<property name="enableSubPackages" value="true" />
 			<property name="trimStrings" value="true" />
 		</javaModelGenerator>
-		<!-- マッピングファイルのパッケージ名と位置 -->
+
+		<!-- 생성될 매퍼 XML 파일의 출력 경로 -->
 		<sqlMapGenerator targetPackage="mapper"
 			targetProject="src/main/resources">
 			<property name="enableSubPackages" value="true" />
 		</sqlMapGenerator>
-		<!-- DAOのパッケージ名と位置 -->
+
+		<!-- 생성될 매퍼 인터페이스(Java)의 패키지 및 출력 경로 -->
 		<javaClientGenerator type="XMLMAPPER"
 			targetPackage="com.kyh.system.mapper" targetProject="src/main/java">
 			<property name="enableSubPackages" value="true" />
 		</javaClientGenerator>
-		<!-- 生成するテーブル tableNameはデータベース内のテーブル名またはビュー名、domainObjectNameはエンティティクラス名 -->
-		<table tableName="t_user" domainObjectName="User">
-			<generatedKey column="no" sqlStatement="JDBC"
+
+		<!-- [수정03] 평가02 대응 - 테이블 대상 변경 및 tg_setting 테이블 추가 ① syain_main 테이블 - 
+			변경: generatedKey 설정 추가 ※ schema="public" 속성은 의도적으로 제거 (하단 경로 생성 문제 참고) - 
+			이유: syain_id 컬럼은 SERIAL(자동 증가) 방식이므로 generatedKey를 JDBC로 지정하여 INSERT 직후 생성된 
+			PK 값을 자바 객체(SyainMain.syainId)에 자동 주입받을 수 있도록 설정. 등록 후 상세 페이지 리다이렉트 등 후처리 
+			시 별도 SELECT 없이 ID 사용 가능 ※ [경로 생성 문제로 인한 schema 속성 제거] - 기존: schema="public" 
+			명시 → MBG가 스키마명을 패키지 경로에 포함시켜 com.kyh.system.model.public.SyainMain 등의 서브 
+			디렉토리가 의도치 않게 생성됨 - 변경: schema 속성 제거 → nullCatalogMeansCurrent=true 설정으로 이미 
+			현재 DB의 public 스키마만 타겟팅되므로 schema 속성 없이도 동일하게 동작하며, 불필요한 서브패키지 경로 생성 문제를 방지 -->
+		<table tableName="syain_main" domainObjectName="SyainMain">
+			<!-- syain_id: SERIAL 컬럼 → INSERT 후 생성된 키 값을 객체에 자동 반영 -->
+			<generatedKey column="syain_id" sqlStatement="JDBC"
 				identity="true" />
 		</table>
+		
+		<table tableName="tg_setting" domainObjectName="TgSetting" />
+		
+		<table tableName="user_auth" domainObjectName="UserAuth">
+			<generatedKey column="user_id" sqlStatement="JDBC"
+				identity="true" />
+		</table>
+
 	</context>
 </generatorConfiguration>

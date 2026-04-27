@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kyh.system.mapper.UserAuthMapper">
+
+	<resultMap id="BaseResultMap" type="com.kyh.system.model.UserAuth">
+		<id column="user_id" jdbcType="INTEGER" property="userId" />
+		<result column="user_code" jdbcType="VARCHAR" property="userCode" />
+		<result column="user_name" jdbcType="VARCHAR" property="userName" />
+		<result column="password" jdbcType="VARCHAR" property="password" />
+		<result column="user_role" jdbcType="CHAR" property="userRole" />
+		<result column="is_youkou" jdbcType="INTEGER" property="isYoukou" />
+	</resultMap>
+
+	<!-- ユーザーコードとMD5パスワードを照合してログインユーザー情報を取得する -->
+	<select id="loginCheck" resultMap="BaseResultMap">
+		SELECT user_id, user_code, user_name, password, user_role, is_youkou
+		FROM "user_auth"
+		WHERE user_code = #{userCode}
+		AND UPPER(MD5(#{password})) = UPPER(password)
+		AND is_youkou = 1
+	</select>
+
+</mapper>

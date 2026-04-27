@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kyh.system.mapper.TgSettingMapper">
+
+  <resultMap id="BaseResultMap" type="com.kyh.system.model.TgSetting">
+    <id column="category1" jdbcType="INTEGER" property="category1" />
+    <id column="category2" jdbcType="INTEGER" property="category2" />
+    <id column="category3" jdbcType="INTEGER" property="category3" />
+    <result column="value1" jdbcType="VARCHAR" property="value1" />
+    <result column="value2" jdbcType="VARCHAR" property="value2" />
+    <result column="value3" jdbcType="VARCHAR" property="value3" />
+    <result column="value4" jdbcType="VARCHAR" property="value4" />
+    <result column="value5" jdbcType="VARCHAR" property="value5" />
+  </resultMap>
+
+  <!--
+    category1 を基準に category2・category3 で絞り込んでマスタ一覧を取得する。
+    null を渡した場合はその条件を動的に除外する。
+  -->
+  <select id="selectByCategory" resultMap="BaseResultMap">
+    SELECT category1, category2, category3, value1, value2, value3, value4, value5
+    FROM tg_setting
+    WHERE category1 = #{category1}
+    <if test="category2 != null">AND category2 = #{category2}</if>
+    <if test="category3 != null">AND category3 = #{category3}</if>
+    ORDER BY category2 ASC, category3 ASC
+  </select>
+
+</mapper>

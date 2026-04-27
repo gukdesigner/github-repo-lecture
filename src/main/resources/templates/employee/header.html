@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ヘッダー: navLabel=ボタンラベル, navUrl=遷移先URL -->
+<header th:fragment="header(navLabel, navUrl)">
+	<div class="main-header">社内統合管理システム</div>
+	<div class="sub-header">
+		<div class="left-side">登録日時：<span th:text="${#calendars.format(#calendars.createNow(), 'yyyy年MM月dd日 HH時mm分ss秒')}"></span></div>
+		<div class="right-side">
+			ユーザー名：<span th:text="${session.loginUser != null ? session.loginUser.userName : '未ログイン'}"></span>
+			<span class="spaced"></span>
+			権限：<span th:text="${session.loginUser != null ? session.loginUser.userRole : 'XX'}"></span>
+			<span class="spaced"></span>
+			<button type="button" th:attr="data-url=${navUrl}" onclick="location.href=this.getAttribute('data-url')" th:text="${navLabel}"></button>
+		</div>
+	</div>
+</header>
+
+</body>
+</html>

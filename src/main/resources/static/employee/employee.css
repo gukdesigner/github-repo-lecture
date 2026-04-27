@@ -1,0 +1,230 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    color: black;
+    padding: 10px;
+    text-align: center;
+}
+
+header .main-header {
+    font-size: 2em;
+}
+
+header .sub-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.sub-header .left-side {
+    text-align: left;
+}
+
+.sub-header .right-side {
+    text-align: right;
+}
+
+.container {
+    padding: 20px;
+}
+
+.ribbon {
+    background: linear-gradient(145deg, #d1d1d1, #e6e6e6);
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 1px 1px 5px rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), inset 0 1px 5px rgba(255, 255, 255, 0.6);
+    margin-bottom: 20px;
+}
+
+.search-condition {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    text-align: left;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.search-form,
+.detail-form {
+    width: 100%;
+}
+
+.search-form label,
+.detail-form label {
+    margin-right: 10px;
+}
+
+.search-form input,
+.search-form select,
+.search-form button,
+.detail-form input,
+.detail-form select,
+.detail-form button {
+    padding: 5px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.search-form .row,
+.form-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 8px 14px;
+    background-color: #BDD7EE;
+    color: black;
+    border: 1px solid #9fb9cf;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #A1C4D4;
+}
+
+/* employee-table と tech-table で共通のテーブル構造 */
+.employee-table,
+.tech-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.employee-table {
+    margin-top: 10px;
+}
+
+.tech-table {
+    margin-bottom: 4px;
+}
+
+.employee-table th,
+.employee-table td,
+.tech-table th,
+.tech-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.employee-table th,
+.tech-table th {
+    background-color: #BDD7EE;
+    color: black;
+    width: 220px;
+}
+
+.tech-table th {
+    white-space: nowrap;
+}
+
+.employee-table td,
+.tech-table td {
+    background-color: #f9f9f9;
+    text-align: left;
+}
+
+.employee-list .employee-table td,
+.employee-list .employee-table th {
+    text-align: center;
+}
+
+.message-error {
+    color: #c62828;
+    margin-bottom: 10px;
+}
+
+.message-success {
+    color: #2e7d32;
+    margin-bottom: 10px;
+}
+
+.right-align {
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+.spaced {
+    margin-right: 20px;
+}
+
+.action-area {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.required {
+    color: red;
+}
+
+/* 技術経験テーブルのセル */
+.tech-table td.empty {
+    background: #f9f9f9;
+}
+
+.tech-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+    width: 100%;
+}
+
+.tech-cell .tech-name {
+    flex: 1;
+    font-size: 0.9em;
+}
+
+.tech-cell .tech-badge {
+    display: inline-block;
+    min-width: 20px;
+    text-align: center;
+    font-weight: bold;
+    color: #1a5ca8;
+    font-size: 1em;
+}
+
+.tech-cell:hover {
+    background: #f0f5ff;
+}
+
+.tech-legend {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+}
+
+/* 作業完了画面 */
+.complete-box {
+    text-align: center;
+    padding: 40px 0;
+}
+
+.complete-msg {
+    font-size: 1.2em;
+    margin-bottom: 16px;
+}
+
+.countdown-msg {
+    color: #666;
+    font-size: 0.95em;
+}

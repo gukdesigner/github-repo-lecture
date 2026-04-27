@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>社員更新</title>
+	<link rel="stylesheet" th:href="@{/employee/employee.css}">
+</head>
+
+<body>
+	<header th:replace="~{employee/header :: header('社員管理画面', '/employee/list')}"></header>
+
+	<div class="container">
+		<div class="ribbon">社員更新</div>
+		<div th:if="${errorMessage}" class="message-error" th:text="${errorMessage}"></div>
+		<div th:if="${validationErrors != null and !#lists.isEmpty(validationErrors)}" class="message-error">
+			<p th:each="err : ${validationErrors}" th:text="${err}"></p>
+		</div>
+
+		<form class="detail-form" th:action="@{/employee/edit}" th:object="${employee}" method="post" id="employeeForm">
+			<input type="hidden" th:field="*{syainId}">
+			<input type="hidden" th:field="*{employeecode}">
+
+			<div class="section-title">■ 基本情報</div>
+			<fieldset th:disabled="${!canEditBasicInfo}" style="border:none;padding:0;margin:0;">
+				<table class="employee-table">
+					<tr><th>社員名(漢字) <span class="required">*</span></th><td>姓 <input type="text" th:field="*{lastNameKanji}" maxlength="15"> 名 <input type="text" th:field="*{firstNameKanji}" maxlength="15"></td></tr>
+					<tr><th>社員名(カタカナ) <span class="required">*</span></th><td>セイ <input type="text" th:field="*{lastNameKana}" maxlength="15"> メイ <input type="text" th:field="*{firstNameKana}" maxlength="15"></td></tr>
+					<tr><th>社員名(英語) <span class="required">*</span></th><td>first name <input type="text" th:field="*{firstNameEigo}" maxlength="30"> last name <input type="text" th:field="*{lastNameEigo}" maxlength="30"></td></tr>
+					<tr><th>性別</th><td><label><input type="radio" th:field="*{seibetu}" value="1"> 男</label><label><input type="radio" th:field="*{seibetu}" value="2"> 女</label></td></tr>
+				</table>
+			</fieldset>
+
+			<div class="section-title">■ 会社関連情報</div>
+			<fieldset th:disabled="${!canEditBasicInfo}" style="border:none;padding:0;margin:0;">
+				<table class="employee-table company-table">
+					<tr><th>所属会社 <span class="required">*</span></th><td><select th:field="*{syozokuKaisya}"><option value="">-- 選択 --</option><option th:each="item : ${companyList}" th:value="${item.code}" th:text="${item.name}"></option></select></td></tr>
+					<tr><th>入社日 <span class="required">*</span></th><td><input type="date" th:field="*{nyuusyaDate}" class="date-input"></td></tr>
+					<tr><th>退社日</th><td><input type="text" id="taisyaDate" name="taisyaDate" th:value="${employee.taisyaDate != null ? #temporals.format(employee.taisyaDate, 'yyyy-MM-dd') : ''}" maxlength="10"> ※YYYY-MM-DD</td></tr>
+					<tr><th>職業種類 <span class="required">*</span></th><td><select th:field="*{syokugyoKind}"><option value="">-- 選択 --</option><option th:each="item : ${jobTypeList}" th:value="${item.code}" th:text="${item.name}"></option></select></td></tr>
+				</table>
+			</fieldset>
+
+			<div class="action-area" th:if="${canEditBasicInfo}"><button type="submit">更　新</button></div>
+		</form>
+	</div>
+
+
+	<script th:src="@{/employee/employeeValidation.js}"></script>
+</body>
+
+</html>

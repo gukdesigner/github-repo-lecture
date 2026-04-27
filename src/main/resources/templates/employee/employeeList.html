@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>社内統合管理システム</title>
+<link rel="stylesheet" th:href="@{/employee/employee.css}">
+</head>
+<body>
+<header th:replace="~{employee/header :: header('ログアウト', '/logout')}"></header>
+
+<div class="container">
+    <div class="ribbon">社員管理</div>
+
+    <div th:if="${errorMessage}" class="message-error" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" class="message-success" th:text="${successMessage}"></div>
+
+    <div class="search-condition">
+        <div class="section-title">■検索条件</div>
+        <form class="search-form" id="searchForm" th:action="@{/employee/list}" th:object="${searchDto}" method="get" onsubmit="return validateSearch();">
+            <input type="hidden" name="searched" value="true">
+            <div class="row">
+                <label for="company">所属会社</label>
+                <select id="company" th:field="*{syozokuKaisya}">
+                    <option value="">全て</option>
+                    <option th:each="item : ${companyList}" th:value="${item.code}" th:text="${item.name}"></option>
+                </select>
+
+                <label for="employee-name">社員名</label>
+                <input type="text" id="employee-name" th:field="*{employeeName}" placeholder="社員名">
+            </div>
+
+            <div class="row">
+                <label for="job-type">職業種類</label>
+                <select id="job-type" th:field="*{syokugyoKind}">
+                    <option th:each="item : ${jobTypeList}" th:value="${item.code}" th:text="${item.name}"></option>
+                </select>
+
+                <label for="active">在職</label>
+                <input type="checkbox" id="active" th:field="*{working}">
+
+                <label for="inactive">非在職</label>
+                <input type="checkbox" id="inactive" th:field="*{notWorking}">
+            </div>
+
+            <div class="row">
+                <button type="submit">検索</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="employee-list">
+        <div class="section-title">■社員一覧</div>
+        <div class="right-align">
+            件数：<span th:text="${#lists.size(employeeList)}">0</span>件 <span class="spaced"></span>
+            <button type="button" th:attr="data-url=@{/employee/register}" onclick="location.href=this.getAttribute('data-url')">新規登録</button>
+        </div>
+
+        <table class="employee-table">
+            <thead>
+                <tr>
+                    <th>所属会社</th>
+                    <th>社員名</th>
+                    <th>性別</th>
+                    <th>職業種類</th>
+                    <th>入社日</th>
+                    <th>退社日</th>
+                    <th>編集</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="emp : ${employeeList}">
+                    <td th:text="${emp.companyName != null ? emp.companyName : '-'}"></td>
+                    <td th:text="${emp.lastNameKanji + ' ' + emp.firstNameKanji}"></td>
+                    <td th:text="${emp.seibetu == 1 ? '男性' : (emp.seibetu == 2 ? '女性' : '-')}"></td>
+                    <td th:text="${emp.jobTypeName != null ? emp.jobTypeName : '-'}"></td>
+                    <td th:text="${emp.nyuusyaDate != null ? #temporals.format(emp.nyuusyaDate, 'yyyy年MM月dd日') : '-'}"></td>
+                    <td th:text="${emp.taisyaDate != null ? #temporals.format(emp.taisyaDate, 'yyyy年MM月dd日') : '-'}"></td>
+                    <td>
+                        <a th:href="@{/employee/edit/{syainId}(syainId=${emp.syainId})}">更新</a>
+                        <br th:if="${canManage}"/>
+                        <form th:if="${canManage}" th:action="@{/employee/delete/{syainId}(syainId=${emp.syainId})}" method="post"
+                              th:attr="data-name=${emp.lastNameKanji + ' ' + emp.firstNameKanji}"
+                              onsubmit="return confirm(this.getAttribute('data-name') + 'を削除してもよろしいですか？');"
+                              style="display:inline;">
+                            <input type="hidden" name="searched" value="true">
+                            <input type="hidden" name="syozokuKaisya" th:if="${searchDto.syozokuKaisya != null}" th:value="${searchDto.syozokuKaisya}">
+                            <input type="hidden" name="employeeName" th:if="${searchDto.employeeName != null}" th:value="${searchDto.employeeName}">
+                            <input type="hidden" name="syokugyoKind" th:if="${searchDto.syokugyoKind != null}" th:value="${searchDto.syokugyoKind}">
+                            <input type="hidden" name="working" th:value="${searchDto.working != null ? searchDto.working : false}">
+                            <input type="hidden" name="notWorking" th:value="${searchDto.notWorking != null ? searchDto.notWorking : false}">
+                            <button type="submit" style="background:none;border:none;padding:0;color:#551a8b;cursor:pointer;font-size:inherit;text-decoration:underline;">削除</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(employeeList)}">
+                    <td colspan="7">データが存在しません。</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<script th:src="@{/employee/employeeValidation.js}"></script>
+</body>
+</html>

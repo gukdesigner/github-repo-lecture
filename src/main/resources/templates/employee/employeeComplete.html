@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>作業完了</title>
+	<link rel="stylesheet" th:href="@{/employee/employee.css}">
+</head>
+
+<body>
+	<header th:replace="~{employee/header :: header('社員管理画面', '/employee/list')}"></header>
+
+	<div class="container">
+		<div class="ribbon">作業完了</div>
+		<div class="complete-box">
+			<p class="complete-msg" th:text="${successMessage}"></p>
+			<p class="countdown-msg" id="countdown"></p>
+		</div>
+	</div>
+
+	<script th:src="@{/employee/employeeValidation.js}"></script>
+</body>
+
+</html>
