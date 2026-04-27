@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 // 社員登録・更新画面の入力値を受け取るフォーム専用 DTO
 public class EmployeeForm {
 
@@ -46,11 +48,13 @@ public class EmployeeForm {
     @NotNull(message = "所属会社は必須です。")
     private Integer syozokuKaisya;
 
-    // 入社日。
+    // 入社日。yyyy-MM-dd 形式で受け取り LocalDate に変換する。
     @NotNull(message = "入社日は必須です。")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate nyuusyaDate;
 
-    // 退社日。在職中の場合は null を設定する。
+	// 退社日。在職中の場合は null を設定する。yyyy-MM-dd 形式で受け取る。
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate taisyaDate;
 
     // 職業種類コード。tg_setting の職業種類マスタに対応する。
