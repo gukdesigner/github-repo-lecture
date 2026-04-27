@@ -59,15 +59,12 @@ public class EmployeeController {
             model.addAttribute("canManage", role.canManageEmployee());
 
             if (!searchDto.isSearched()) {
-                // 初回表示: デフォルト値を設定して空リストを返す
                 searchDto.setWorking(true);
                 searchDto.setNotWorking(false);
                 jobTypeList.stream()
                     .filter(j -> DEFAULT_JOB_TYPE_NAME.equals(j.getValue1()))
                     .findFirst()
                     .ifPresent(j -> searchDto.setSyokugyoKind(j.getCategory3()));
-                model.addAttribute("employeeList", java.util.Collections.emptyList());
-                return "employee/employeeList";
             }
 
             if (!Boolean.TRUE.equals(searchDto.getWorking()) && !Boolean.TRUE.equals(searchDto.getNotWorking())) {
