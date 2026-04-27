@@ -78,6 +78,9 @@
 		parameterType="java.lang.Integer"
 		resultMap="BaseResultMap">
 		SELECT
+			<!-- 設計書SQLにSYAIN_IDの取得記載なし。更新処理（UPDATE）での対象レコード特定に
+     			必要なため実装時に追加。設計書と差異あり。 -->
+			syain_id,
 			employeecode,
 			first_name_kanji,   last_name_kanji,
 			first_name_kana,    last_name_kana,
