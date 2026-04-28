@@ -48,9 +48,9 @@
 					<tr><th>金融機関コード</th><th>金融機関名</th><th>支店名コード</th><th>支店名</th><th>口座種類</th><th>口座番号</th><th>名義人</th></tr>
 					<tr>
 						<td><input type="text" id="kinyukikan_code" th:field="*{kinyukikanCode}" maxlength="10"></td>
-						<td><input type="text" id="kinyukikan_name" th:field="*{kinyukikanName}" maxlength="50"></td>
+						<td><input type="text" id="kinyukikan_name" th:field="*{kinyukikanName}" maxlength="50" readonly></td>
 						<td><input type="text" id="siten_code" th:field="*{sitenCode}" maxlength="10"></td>
-						<td><input type="text" id="siten_name" th:field="*{sitenName}" maxlength="50"></td>
+						<td><input type="text" id="siten_name" th:field="*{sitenName}" maxlength="50" readonly></td>
 						<td><select th:field="*{kouzaKind}"><option value="1">普通</option><option value="2">当座</option><option value="3">貯蓄</option></select></td>
 						<td><input type="text" th:field="*{kouzaNum}" maxlength="10"></td>
 						<td><input type="text" th:field="*{meigiName}" maxlength="50"></td>
