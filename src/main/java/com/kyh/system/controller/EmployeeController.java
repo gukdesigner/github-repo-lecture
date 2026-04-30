@@ -161,6 +161,11 @@ public class EmployeeController {
             return "redirect:/employee/list";
         }
 
+        if (form.getSyainId() == null) {
+            ra.addFlashAttribute("errorMessage", "社員IDが不正です。再度お試しください。");
+            return "redirect:/employee/list";
+        }
+
         if (result.hasErrors()) {
             return prepareEditErrorView(model, result);
         }
@@ -241,7 +246,9 @@ public class EmployeeController {
         return (UserAuth) session.getAttribute("loginUser");
     }
 
-    // セッションからログインユーザーのロールを取得する。未定義ロールは D（最小権限）として扱う
+    // セッションからログインユーザーのロールを取得する。
+    // 未定義ロールは D（最小権限）として扱う。
+    // 未ログインアクセスは LoginInterceptor で /login へリダイレクトされる前提。
     private UserRole getRole(HttpSession session) {
         UserRole role = UserRole.from(getLoginUser(session).getUserRole());
         return role != null ? role : UserRole.D;
