@@ -120,11 +120,7 @@ public class EmployeeController {
         form.setItOs(joinValues(itOsValues));
 
         if (result.hasErrors()) {
-            addRegisterPermissions(model, role);
-            loadMasterData(model);
-            addItOsChunks(model);
-            addValidationErrors(model, result);
-            return "employee/employeeRegister";
+            return prepareRegisterErrorView(model, result, role);
         }
 
         try {
@@ -176,10 +172,7 @@ public class EmployeeController {
         }
 
         if (result.hasErrors()) {
-            model.addAttribute("canEditBasicInfo", true);
-            loadMasterData(model);
-            addValidationErrors(model, result);
-            return "employee/employeeEdit";
+            return prepareEditErrorView(model, result);
         }
 
         try {
@@ -194,6 +187,24 @@ public class EmployeeController {
         }
         ra.addFlashAttribute("successMessage", "社員情報を更新しました。");
         return "redirect:/employee/complete";
+    }
+
+
+    // 登録処理でバリデーションエラーが発生した場合の画面再表示データを準備する
+    private String prepareRegisterErrorView(Model model, BindingResult result, UserRole role) {
+        addRegisterPermissions(model, role);
+        loadMasterData(model);
+        addItOsChunks(model);
+        addValidationErrors(model, result);
+        return "employee/employeeRegister";
+    }
+
+    // 更新処理でバリデーションエラーが発生した場合の画面再表示データを準備する
+    private String prepareEditErrorView(Model model, BindingResult result) {
+        model.addAttribute("canEditBasicInfo", true);
+        loadMasterData(model);
+        addValidationErrors(model, result);
+        return "employee/employeeEdit";
     }
 
     // 作業完了画面を表示する
