@@ -20,6 +20,8 @@ import com.kyh.system.model.TgSetting;
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
+    private static final String DEFAULT_JOB_TYPE_NAME = "ITエンジニア";
+
     @Autowired
     private TgSettingMapper tgSettingMapper;
 
@@ -125,6 +127,27 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<TgSetting> getItFwList() {
         return getSettings(MasterCategory.IT_FW);
+    }
+
+    // 初回表示時の社員一覧検索条件（在職中・既定職業）を設定する
+    @Override
+    public void initializeDefaultSearchCondition(EmployeeSearchDto searchDto, List<TgSetting> jobTypeList) {
+        if (searchDto.isSearched()) {
+            return;
+        }
+
+        searchDto.setWorking(true);
+        searchDto.setNotWorking(false);
+        jobTypeList.stream()
+                .filter(j -> DEFAULT_JOB_TYPE_NAME.equals(j.getValue1()))
+                .findFirst()
+                .ifPresent(j -> searchDto.setSyokugyoKind(j.getCategory3()));
+    }
+
+    // 在職／非在職チェック条件が検索可能かを判定する
+    @Override
+    public boolean isValidWorkingFilter(Boolean working, Boolean notWorking) {
+        return Boolean.TRUE.equals(working) || Boolean.TRUE.equals(notWorking);
     }
 
     // 検索条件に一致する社員一覧を取得する

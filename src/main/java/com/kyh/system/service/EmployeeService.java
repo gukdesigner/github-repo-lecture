@@ -40,6 +40,12 @@ public interface EmployeeService {
     // IT スキル（フレームワーク）マスタ一覧を取得する
     List<TgSetting> getItFwList();
 
+    // 初回表示時の社員一覧検索条件（在職中・既定職業）を設定する
+    void initializeDefaultSearchCondition(EmployeeSearchDto searchDto, List<TgSetting> jobTypeList);
+
+    // 在職／非在職チェック条件が検索可能かを判定する
+    boolean isValidWorkingFilter(Boolean working, Boolean notWorking);
+
     // 検索条件に一致する社員一覧を取得する
     List<EmployeeListDto> getEmployeeSearchList(EmployeeSearchDto searchDto);
 

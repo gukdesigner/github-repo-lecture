@@ -41,9 +41,6 @@ public class EmployeeController {
     // 登録フォームの性別初期値（1: 男性）
     private static final int DEFAULT_SEIBETU = 1;
 
-    // 初回表示時に職業種類の初期値として使用するマスタ名称
-    private static final String DEFAULT_JOB_TYPE_NAME = "ITエンジニア";
-
     @Autowired
     private EmployeeService employeeService;
 
@@ -58,16 +55,9 @@ public class EmployeeController {
             model.addAttribute("jobTypeList", jobTypeList);
             model.addAttribute("canManage", role.canManageEmployee());
 
-            if (!searchDto.isSearched()) {
-                searchDto.setWorking(true);
-                searchDto.setNotWorking(false);
-                jobTypeList.stream()
-                    .filter(j -> DEFAULT_JOB_TYPE_NAME.equals(j.getValue1()))
-                    .findFirst()
-                    .ifPresent(j -> searchDto.setSyokugyoKind(j.getCategory3()));
-            }
+            employeeService.initializeDefaultSearchCondition(searchDto, jobTypeList);
 
-            if (!Boolean.TRUE.equals(searchDto.getWorking()) && !Boolean.TRUE.equals(searchDto.getNotWorking())) {
+            if (!employeeService.isValidWorkingFilter(searchDto.getWorking(), searchDto.getNotWorking())) {
                 model.addAttribute("errorMessage", "在籍と非在籍がいずれにしても、１つのチェックが必須です。");
                 model.addAttribute("employeeList", java.util.Collections.emptyList());
                 return "employee/employeeList";
