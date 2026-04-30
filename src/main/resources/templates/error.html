@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<!-- この画面は主に存在しないURL（404）向けの共通エラーページで、
+	ログイン画面への導線を案内します。 -->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>오류</title>
+    <title>エラー</title>
     <link rel="stylesheet" th:href="@{/css/base.css}">
 </head>
 <body>
 <div style="width: 720px; margin: 80px auto; text-align: center;">
-    <h2>요청하신 페이지를 찾을 수 없습니다.</h2>
-    <p>URL을 다시 확인하시거나 로그인 화면으로 이동해주세요.</p>
-    <a th:href="@{/login}">로그인 화면으로 이동</a>
+    <h2>お探しのページが見つかりませんでした。</h2>
+    <p>URLをご確認いただくか、ログイン画面へ移動してください。</p>
+    <a th:href="@{/login}">ログイン画面へ移動</a>
 </div>
 </body>
 </html>
