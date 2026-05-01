@@ -17,6 +17,7 @@
 
     <div class="search-condition">
         <div class="section-title">■検索条件</div>
+        <!-- searched=true はバックエンドで「初回表示」ではなく「検索実行」と判定するためのフラグ。EmployeeServiceImpl#initializeDefaultSearchCondition 参照。 -->
         <form class="search-form" id="searchForm" th:action="@{/employee/list}" th:object="${searchDto}" method="get" onsubmit="return validateSearch();">
             <input type="hidden" name="searched" value="true">
             <div class="row">
@@ -79,6 +80,7 @@
                     <td>
                         <a th:href="@{/employee/edit/{syainId}(syainId=${emp.syainId})}">更新</a>
                         <br th:if="${canManage}"/>
+                        <!-- 削除後に同じ検索条件で一覧へ戻るため、現在の検索状態を hidden で引き渡す。EmployeeController#delete 参照。 -->
                         <form th:if="${canManage}" th:action="@{/employee/delete/{syainId}(syainId=${emp.syainId})}" method="post"
                               th:attr="data-name=${emp.lastNameKanji + ' ' + emp.firstNameKanji}"
                               onsubmit="return confirm(this.getAttribute('data-name') + 'を削除してもよろしいですか？');"

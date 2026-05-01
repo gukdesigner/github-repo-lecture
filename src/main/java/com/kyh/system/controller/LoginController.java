@@ -13,7 +13,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.kyh.system.service.LoginService;
 import com.kyh.system.service.LoginService.LoginResult;
 
-// ログイン・ログアウト処理を担当するコントローラー
+// ログイン・ログアウト処理を担当するコントローラー。
+// 【認証フロー】
+//   GET  /login  → loginPage()  → employeeLogin.html を表示
+//   POST /login  → login()      → LoginService で3段階検証
+//                  成功: 旧セッション破棄 → 新セッション発行（セッション固定攻撃対策）
+//                        session に UserAuth を "loginUser" キーで保存
+//                        → redirect:/employee/list
+//                  失敗: エラーメッセージをモデルにセットして再表示
+//   GET  /logout → logout()     → セッション無効化 → redirect:/login
+//   以降の /employee/** アクセスは LoginInterceptor が "loginUser" の有無を検証する
 @Controller
 public class LoginController {
 

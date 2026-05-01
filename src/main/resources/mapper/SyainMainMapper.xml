@@ -48,7 +48,13 @@
 		<result column="gakkou_name" jdbcType="VARCHAR" property="gakkouName" />
 		<result column="sennmom_name" jdbcType="VARCHAR" property="sennmomName" />
 		<result column="sotugyo_date" jdbcType="DATE" property="sotugyoDate" />
-		<!-- ITスキル情報 -->
+		<!--
+			ITスキル情報（it_os / it_gengo / it_db / it_web_server / it_fw / it_other）
+			【格納フォーマット】 カンマ区切り、各要素は「マスタID-経験レベル」形式
+			  経験レベル: 1=◎（実務1年以上）, 2=○（実務経験あり）, 3=△（知識あり）
+			  例: "2-1,4-3,6-2" → ID2を◎, ID4を△, ID6を○ で習得
+			  マスタIDの対応は SyainMain.java の各フィールドコメント参照。
+		-->
 		<result column="it_os" jdbcType="VARCHAR" property="itOs" />
 		<result column="it_gengo" jdbcType="VARCHAR" property="itGengo" />
 		<result column="it_db" jdbcType="VARCHAR" property="itDb" />
@@ -163,7 +169,12 @@
 		UPDATE syain_main SET delete_flag = 1 WHERE syain_id = #{syainId}
 	</update>
 
-	<!-- 社員一覧検索。tg_setting を LEFT JOIN して会社名・職業名を取得する -->
+	<!--
+		社員一覧検索。tg_setting を LEFT JOIN して会社名・職業名を取得する。
+		JOIN の条件は以下の通り（MasterCategory のコメントも参照）:
+		  tc: category1=1（会社マスタ）, category3=1（会社名行のみ）, category2=所属会社ID で一致
+		  tj: category1=3, category2=4（MasterCategory.JOB_TYPE=職業種類）, category3=職業コード で一致
+	-->
 	<select id="selectEmployeeSearchList"
 		parameterType="com.kyh.system.dto.EmployeeSearchDto"
 		resultType="com.kyh.system.dto.EmployeeListDto">
@@ -182,11 +193,11 @@
 		FROM syain_main sm
 		LEFT JOIN tg_setting tc
 			ON  tc.category1 = 1
-			AND tc.category3 = 1
+			AND tc.category3 = 1      <!-- 会社名行（category3=1）のみを対象にする -->
 			AND tc.category2 = sm.syozoku_kaisya
 		LEFT JOIN tg_setting tj
 			ON  tj.category1 = 3
-			AND tj.category2 = 4
+			AND tj.category2 = 4      <!-- MasterCategory.JOB_TYPE（職業種類）-->
 			AND tj.category3 = sm.syokugyo_kind
 		WHERE sm.delete_flag = 0
 

@@ -25,6 +25,7 @@
 			<p th:each="err : ${validationErrors}" th:text="${err}"></p>
 		</div>
 
+		<!-- 社員登録フォーム。employeeValidation.js が id=employeeForm を参照して送信時チェックを行う。 -->
 		<form class="detail-form" th:action="@{/employee/register}" th:object="${employee}" method="post" id="employeeForm">
 			<div class="section-title">■ 基本情報</div>
 			<fieldset th:disabled="${!canEditBasicInfo}" style="border:none;padding:0;margin:0;">
@@ -72,6 +73,7 @@
 						<th th:if="${chunkStat.first}" th:attr="rowspan=${#lists.size(itOsChunks)}">ＯＳ</th>
 						<td th:each="item : ${chunk}" th:data-id="${item.code}" th:data-group="itOsValues" class="tech-click-cell">
 							<div class="tech-cell"><span class="tech-name" th:text="${item.name}"></span><span class="tech-badge"></span></div>
+							<!-- JS(employeeValidation.js)がクリック時に name="itOsValues" と value="id-レベル" を動的にセットする。未選択時は name を除去して送信対象から外す。 -->
 							<input type="hidden" th:name="itOsValues" value="">
 						</td>
 						<td class="empty" th:each="i : ${#numbers.sequence(1, 5 - chunk.size())}" th:if="${chunk.size() < 5}"></td>
@@ -84,6 +86,7 @@
 	</div>
 
 
+	<!-- canEditTechSkills は JS 側でクリック編集可否を切り替えるフラグとして利用する。 -->
 	<script th:inline="javascript">
 		var canEditTechSkills = /*[[${canEditTechSkills}]]*/ false;
 	</script>

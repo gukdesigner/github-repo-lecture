@@ -1,12 +1,17 @@
+// 社員画面で共通利用するフロント入力チェック。
+// 目的: サーバー送信前に基本的な入力ミスを早期検知し、最初の1件をアラート表示する。
 var EmpVal = {
+    // id で要素を取得し、未存在時は空文字を返す（null参照回避）
     val: function (id) {
         var el = document.getElementById(id);
         return el ? el.value : '';
     },
+    // name 属性で要素を取得し、未存在時は空文字を返す
     selVal: function (name) {
         var el = document.querySelector('[name="' + name + '"]');
         return el ? el.value : '';
     },
+    // 必須チェック（空白のみも未入力として扱う）
     req: function (errors, v, label) {
         if (!v || !v.trim()) { errors.push(label + 'を入力してください。'); return false; }
         return true;
@@ -26,6 +31,7 @@ var EmpVal = {
     maxLen: function (errors, v, max, label) {
         if (v && v.length > max) errors.push(label + 'は' + max + '文字以下で入力してください。');
     },
+    // 退社日の形式と日付範囲を検証し、必要なら補正してユーザーへ通知する
     taisyaDate: function (errors) {
         var taisya = EmpVal.val('taisyaDate');
         if (!taisya) return;
@@ -60,6 +66,7 @@ function validateSearch() {
 // OS技術スキルのクリックトグル（登録画面）
 // canEditTechSkills は th:inline で直前に定義される
 if (typeof canEditTechSkills !== 'undefined' && canEditTechSkills) {
+    // 先頭の空文字はクリック4回目で「未選択」に戻るリセット状態を表す
     var LEVELS = ['', '◎', '○', '△'];
     document.querySelectorAll('.tech-click-cell').forEach(function (td) {
         td.addEventListener('click', function () {
@@ -81,6 +88,7 @@ if (typeof canEditTechSkills !== 'undefined' && canEditTechSkills) {
 }
 
 // 登録・更新フォームの送信バリデーション
+// 処理方針: エラー配列に蓄積し、1件以上あれば送信を止めて先頭メッセージを表示する
 (function () {
     var form = document.getElementById('employeeForm');
     if (!form) return;

@@ -16,11 +16,15 @@ import com.kyh.system.mapper.TgSettingMapper;
 import com.kyh.system.model.SyainMain;
 import com.kyh.system.model.TgSetting;
 
-// 社員情報に関するビジネスロジックを実装するサービスクラス
+// EmployeeService の実装クラス。
+// 役割: 業務ルール判定とMapper呼び出しの調停（ControllerとSQLの橋渡し）。
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
-    private static final String DEFAULT_JOB_TYPE_NAME = "ITエンジニア";
+    // tg_setting（category1=3, category2=4）の職業種類マスタにおける「ITエンジニア」の category3 値。
+    // 名称ではなくコードで指定することで、マスタの名称変更に影響されない。
+    // 変更する場合はこの定数のみ修正すること。
+    private static final int DEFAULT_JOB_TYPE_CODE = 4;
 
     @Autowired
     private TgSettingMapper tgSettingMapper;
@@ -44,6 +48,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     // 変更されたフィールドのみ UPDATE する。変更がない場合は false を返す。
+    // 更新前データを DB から再取得し buildChanges() で差分 Map を生成する。
+    // null への変更も Map のキー存在チェックで正しく反映される（通常の null 比較とは異なる点に注意）。
     @Override
     public boolean updateEmployee(SyainMain employee) {
         SyainMain before = syainMainMapper.selectEmployeeForEdit(employee.getSyainId());
@@ -131,17 +137,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     // 初回表示時の社員一覧検索条件（在職中・既定職業）を設定する
     @Override
-    public void initializeDefaultSearchCondition(EmployeeSearchDto searchDto, List<TgSetting> jobTypeList) {
+    public void initializeDefaultSearchCondition(EmployeeSearchDto searchDto) {
         if (searchDto.isSearched()) {
             return;
         }
 
         searchDto.setWorking(true);
         searchDto.setNotWorking(false);
-        jobTypeList.stream()
-                .filter(j -> DEFAULT_JOB_TYPE_NAME.equals(j.getValue1()))
-                .findFirst()
-                .ifPresent(j -> searchDto.setSyokugyoKind(j.getCategory3()));
+        searchDto.setSyokugyoKind(DEFAULT_JOB_TYPE_CODE);
     }
 
     // 在職／非在職チェック条件が検索可能かを判定する
@@ -157,7 +160,9 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     // 更新前後を比較し、変更されたフィールドのみを Map に格納して返す。
-    // 更新画面にフィールドを追加した場合は、このメソッドと updateEmployee の XML も同時に更新すること。
+    // Objects.equals を使用するのは、どちらかが null の場合でも NPE を回避するため。
+    // この Map は MyBatis の updateEmployee(map) に渡され、containsKey で更新列を判定する。
+    // フィールド追加時は本メソッドと mapper/SyainMainMapper.xml の updateEmployee を同時に更新すること。
     private Map<String, Object> buildChanges(SyainMain before, SyainMain after) {
         Map<String, Object> changes = new LinkedHashMap<>();
         if (!Objects.equals(before.getLastNameKanji(),  after.getLastNameKanji()))  changes.put("lastNameKanji",  after.getLastNameKanji());

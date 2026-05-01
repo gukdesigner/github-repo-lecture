@@ -1,6 +1,8 @@
 package com.kyh.system.model;
 
 // マスタ設定情報を保持するモデル。tg_setting テーブルに対応する。
+// tg_setting は category1/2/3 の3階層キーで全マスタを1テーブルに集約した汎用マスタ。
+// 区分の定義は MasterCategory.java を参照。各行の項目コードは code フィールド（ビュー用）に格納される。
 public class TgSetting {
 
     // マスタ区分の第1レベル。テーブルの大分類を示す。

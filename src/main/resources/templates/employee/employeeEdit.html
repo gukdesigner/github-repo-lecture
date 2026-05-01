@@ -18,8 +18,10 @@
 			<p th:each="err : ${validationErrors}" th:text="${err}"></p>
 		</div>
 
+		<!-- 社員更新フォーム。register画面と同じ検証JSを再利用するため id=employeeForm を合わせる。 -->
 		<form class="detail-form" th:action="@{/employee/edit}" th:object="${employee}" method="post" id="employeeForm">
 			<input type="hidden" th:field="*{syainId}">
+			<!-- employeecode は更新画面では表示しないが、フォームオブジェクトのバインドに必要なため hidden で送信する。 -->
 			<input type="hidden" th:field="*{employeecode}">
 
 			<div class="section-title">■ 基本情報</div>

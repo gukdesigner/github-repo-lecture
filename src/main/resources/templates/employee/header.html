@@ -8,6 +8,7 @@
 	<div class="sub-header">
 		<div class="left-side">登録日時：<span th:text="${#calendars.format(#calendars.createNow(), 'yyyy年MM月dd日 HH時mm分ss秒')}"></span></div>
 		<div class="right-side">
+			<!-- session.loginUser は LoginController#login でセッションに設定される UserAuth オブジェクト。未ログイン時は null。 -->
 			ユーザー名：<span th:text="${session.loginUser != null ? session.loginUser.userName : '未ログイン'}"></span>
 			<span class="spaced"></span>
 			権限：<span th:text="${session.loginUser != null ? session.loginUser.userRole : 'XX'}"></span>

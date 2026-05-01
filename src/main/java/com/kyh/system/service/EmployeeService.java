@@ -7,7 +7,8 @@ import com.kyh.system.dto.EmployeeSearchDto;
 import com.kyh.system.model.SyainMain;
 import com.kyh.system.model.TgSetting;
 
-// 社員情報に関するビジネスロジックを定義するサービスインターフェース
+// 社員情報に関するユースケース（業務の入口）を定義するインターフェース。
+// Controller はこの契約だけを呼び出し、実装詳細は知らなくてよい。
 public interface EmployeeService {
 
     // 所属会社マスタ一覧を取得する
@@ -41,7 +42,7 @@ public interface EmployeeService {
     List<TgSetting> getItFwList();
 
     // 初回表示時の社員一覧検索条件（在職中・既定職業）を設定する
-    void initializeDefaultSearchCondition(EmployeeSearchDto searchDto, List<TgSetting> jobTypeList);
+    void initializeDefaultSearchCondition(EmployeeSearchDto searchDto);
 
     // 在職／非在職チェック条件が検索可能かを判定する
     boolean isValidWorkingFilter(Boolean working, Boolean notWorking);

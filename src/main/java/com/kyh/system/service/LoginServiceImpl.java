@@ -16,6 +16,11 @@ public class LoginServiceImpl implements LoginService {
     @Autowired
     private UserAuthMapper userAuthMapper;
 
+    // ログイン検証を3段階で行う。
+    // ① loginCheck: userCode + UPPER(MD5(password)) + is_youkou=1 をSQLで一括照合
+    //    → null の場合はID/PW不一致（is_youkou=0 の停止中アカウントも含む）
+    // ② UserRole.isSupported: DB に想定外の権限コードが混入した場合の防御チェック
+    // ③ isYoukou: SQLで既に絞り込み済みだが、停止アカウントの理由を明示するために残す
     @Override
     public LoginResult login(String userCode, String password) {
         UserAuth user = userAuthMapper.loginCheck(userCode, password);

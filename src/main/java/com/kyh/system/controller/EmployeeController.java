@@ -44,7 +44,14 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    // 社員一覧画面を表示する。初回アクセス時はデフォルト検索条件（在職中・ITエンジニア）を設定する。
+    // 社員一覧画面を表示する。
+    // 【処理フロー】
+    //   ① tg_setting からドロップダウン用マスタ取得（所属会社・職業種類）
+    //   ② セッションから UserRole を取得し canManage フラグを画面に渡す（S権限のみ削除可）
+    //   ③ searched フラグがない初回表示のみ、在職中・ITエンジニア（code=4）を既定条件にセット
+    //      searched=true は検索フォームの hidden から送信され、ユーザー操作による検索と区別する
+    //   ④ 在職／非在職チェックの有効性検証
+    //   ⑤ 検索条件で syain_main を SELECT → employeeList として画面に渡す
     @GetMapping("/list")
     public String list(@ModelAttribute("searchDto") EmployeeSearchDto searchDto, HttpSession session, Model model) {
         try {
@@ -55,7 +62,7 @@ public class EmployeeController {
             model.addAttribute("jobTypeList", jobTypeList);
             model.addAttribute("canManage", role.canManageEmployee());
 
-            employeeService.initializeDefaultSearchCondition(searchDto, jobTypeList);
+            employeeService.initializeDefaultSearchCondition(searchDto);
 
             if (!employeeService.isValidWorkingFilter(searchDto.getWorking(), searchDto.getNotWorking())) {
                 model.addAttribute("errorMessage", "在籍と非在籍がいずれにしても、１つのチェックが必須です。");
@@ -72,6 +79,9 @@ public class EmployeeController {
     }
 
     // 社員登録フォーム画面を表示する。全ロールがアクセス可。エリア表示はロール権限で制御する。
+    // 権限フラグ4種（canEditBasicInfo / canSeeSalary / canEditTechSkills / canSeeTechSkills）を
+    // モデルにセットし、Thymeleaf の th:disabled・th:if で表示領域を制御する。
+    // canEditTechSkills は th:inline で JS 変数として渡し、ITスキルのクリック編集可否を切り替える。
     @GetMapping("/register")
     public String showRegisterForm(HttpSession session, Model model) {
         try {
@@ -90,7 +100,13 @@ public class EmployeeController {
         }
     }
 
-    // 社員情報を新規登録する。基本情報編集権限（S・A・D）がない場合は一覧画面へリダイレクトする。
+    // 社員情報を新規登録する。
+    // 【処理フロー】
+    //   ① canEditBasicInfo 権限確認（なければ一覧へリダイレクト）
+    //   ② itOsValues（JS クリックで組み立てた "マスタID-レベル" 配列）をカンマ区切り文字列に結合
+    //      例: ["2-1","4-3"] → "2-1,4-3"。@Validated より前に実行し検証対象に含める。
+    //   ③ @Validated で EmployeeForm のアノテーション検証 → エラー時は登録画面に戻す
+    //   ④ toSyainMain() で DTO → モデル変換 → insertEmployee() で DB 登録
     @PostMapping("/register")
     public String register(
             @Validated
@@ -124,6 +140,9 @@ public class EmployeeController {
     }
 
     // 社員編集フォーム画面を表示する。指定された社員IDが存在しない場合は一覧画面へリダイレクトする。
+    // toEmployeeForm() で SyainMain → EmployeeForm に変換する際、
+    // itOs・給与情報は更新画面に表示しないため意図的に除外する（登録専用項目）。
+    // 更新画面は登録画面と異なり canEditBasicInfo の1フラグのみ使用する。
     @GetMapping("/edit/{syainId}")
     public String showEditForm(@PathVariable("syainId") Integer syainId, HttpSession session, Model model, RedirectAttributes ra) {
         try {
@@ -145,7 +164,13 @@ public class EmployeeController {
         }
     }
 
-    // 社員情報を更新する。基本情報編集権限（S・A・D）がない場合は一覧画面へリダイレクトする。
+    // 社員情報を更新する。
+    // 【処理フロー】
+    //   ① canEditBasicInfo 権限確認 / syainId の存在確認
+    //   ② @Validated でフォーム検証 → エラー時は更新画面に戻す
+    //   ③ updateEmployee() で更新前データを DB から再取得 → buildChanges() で差分検出
+    //      変更なし → "変更項目なし" エラーで更新画面へ戻す
+    //      変更あり → 差分 Map を MyBatis に渡して変更された列のみ UPDATE
     @PostMapping("/edit")
     public String edit(
             @Validated
@@ -262,13 +287,16 @@ public class EmployeeController {
         model.addAttribute("canSeeTechSkills",  role.canSeeTechSkills());
     }
 
-    // マスタデータ（所属会社・職業種類）をモデルに追加する
+    // 登録・更新 両画面で共通して使うマスタ（所属会社・職業種類）をモデルに追加する。
+    // 登録画面のみで使うマスタ（技術経験など）はこのメソッドに追加しないこと。
     private void loadMasterData(Model model) {
         model.addAttribute("companyList", employeeService.getCompanyList());
         model.addAttribute("jobTypeList", employeeService.getJobTypeList());
     }
 
-    // IT OS リストを OS_CHUNK_SIZE 件ずつのチャンクに分割してモデルに追加する
+    // 登録画面専用。IT OS リストを OS_CHUNK_SIZE 件ずつのチャンクに分割してモデルに追加する。
+    // 技術経験の別カテゴリ（言語・DBなど）を登録画面に追加する場合は、
+    // 同じパターンで addIt〇〇Chunks メソッドを追加し、showRegisterForm / prepareRegisterErrorView の両方から呼ぶこと。
     private void addItOsChunks(Model model) {
         List<List<TgSetting>> chunks = new ArrayList<List<TgSetting>>();
         List<TgSetting> all = employeeService.getItOsList();
@@ -290,8 +318,11 @@ public class EmployeeController {
         return (values == null || values.isEmpty()) ? null : String.join(",", values);
     }
 
-    // EmployeeForm を SyainMain モデルに変換する。
-    // フィールドを追加した場合は toEmployeeForm・hasChanges・selectEmployeeForEdit も同時に更新すること。
+    // EmployeeForm を SyainMain モデルに変換する（登録・更新 共通）。
+    // 【フィールド追加時のルール】
+    // ・登録・更新 両画面で使うフィールド → toSyainMain / toEmployeeForm / buildChanges / XML の insertEmployee と updateEmployee を更新
+    // ・登録画面のみのフィールド（itOs・給与情報など） → toSyainMain / XML の insertEmployee のみ更新
+    //   ※ toEmployeeForm・buildChanges・updateEmployee には追加しない（更新画面に表示しないため）
     private SyainMain toSyainMain(EmployeeForm form) {
         SyainMain emp = new SyainMain();
         emp.setSyainId(form.getSyainId());
@@ -318,8 +349,9 @@ public class EmployeeController {
         return emp;
     }
 
-    // DB から取得した SyainMain を編集フォーム表示用の EmployeeForm に変換する。
-    // フィールドを追加した場合は toSyainMain・hasChanges・selectEmployeeForEdit も同時に更新すること。
+    // DB から取得した SyainMain を更新フォーム表示用の EmployeeForm に変換する。
+    // 更新画面に表示する項目のみ設定する。登録専用フィールド（itOs・給与情報など）は意図的に除外している。
+    // フィールド追加時のルールは toSyainMain のコメントを参照。
     private EmployeeForm toEmployeeForm(SyainMain emp) {
         EmployeeForm form = new EmployeeForm();
         form.setSyainId(emp.getSyainId());

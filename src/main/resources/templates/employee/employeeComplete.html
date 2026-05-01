@@ -15,6 +15,7 @@
 		<div class="ribbon">作業完了</div>
 		<div class="complete-box">
 			<p class="complete-msg" th:text="${successMessage}"></p>
+			<!-- id="countdown" は employeeValidation.js のカウントダウン処理が参照する。3秒後に /employee/list へ自動遷移。 -->
 			<p class="countdown-msg" id="countdown"></p>
 		</div>
 	</div>
