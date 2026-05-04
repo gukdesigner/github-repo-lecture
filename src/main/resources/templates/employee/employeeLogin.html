@@ -1,27 +1,20 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>ログイン画面</title>
-<link rel="stylesheet" th:href="@{/employee/employee.css}">
+<title>ログイン</title>
+<link rel="stylesheet" th:href="@{/employee/login.css}">
 </head>
 <body>
 <div class="login-box">
-    <h3>ログインフォーム</h3>
-    <hr>
+    <h1>社内統合管理システム</h1>
 
-    <p th:if="${error}" th:text="${error}" class="message-error"></p>
+    <p th:if="${error}" class="message-error" th:text="${error}"></p>
 
     <form th:action="@{/login}" method="post">
-        <label>ユーザーID：
-            <input type="text" name="userCode" size="15" required>
-        </label>
-        <br>
-        <label for="pass">パスワード： </label>
-        <input id="pass" type="password" name="password" size="15" required>
-
-        <br><br>
-        <input type="submit" value="ログイン">
+        <input type="text"     name="userCode"  placeholder="ユーザーID" required>
+        <input type="password" name="password"  placeholder="パスワード" required>
+        <button type="submit">ログイン</button>
     </form>
 </div>
 </body>
