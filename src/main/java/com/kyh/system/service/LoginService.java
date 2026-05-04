@@ -2,6 +2,8 @@ package com.kyh.system.service;
 
 import com.kyh.system.model.UserAuth;
 
+import lombok.Getter;
+
 // ログイン認証に関するビジネスロジックを定義するサービスインターフェース
 public interface LoginService {
 
@@ -9,6 +11,7 @@ public interface LoginService {
     LoginResult login(String userCode, String password);
 
     // ログイン処理の結果を保持する値オブジェクト
+    @Getter
     class LoginResult {
         private final boolean success;
         private final UserAuth user;
@@ -27,9 +30,5 @@ public interface LoginService {
         public static LoginResult failure(String errorMessage) {
             return new LoginResult(false, null, errorMessage);
         }
-
-        public boolean isSuccess() { return success; }
-        public UserAuth getUser() { return user; }
-        public String getErrorMessage() { return errorMessage; }
     }
 }

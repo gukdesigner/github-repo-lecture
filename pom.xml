@@ -74,6 +74,15 @@
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- Lombok: getter/setter ボイラープレートを削減 -->
+        <!-- Pleiadesバンドル版に合わせてバージョンを固定 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.36</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>

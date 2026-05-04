@@ -1,7 +1,5 @@
 package com.kyh.system.auth;
 
-import java.util.Arrays;
-
 // 設計書 2.9 登録画面エリア別権限（○=編集可, △=参照のみ, ×=非表示）
 //                      S    A    B    C    D
 // 基本情報・会社関連    ○    ○    △    △    ○
@@ -40,12 +38,10 @@ public enum UserRole {
     }
 
     public static UserRole from(String roleCode) {
-        if (roleCode == null) {
+        try {
+            return roleCode != null ? UserRole.valueOf(roleCode) : null;
+        } catch (IllegalArgumentException e) {
             return null;
         }
-        return Arrays.stream(values())
-                .filter(v -> v.name().equals(roleCode))
-                .findFirst()
-                .orElse(null);
     }
 }

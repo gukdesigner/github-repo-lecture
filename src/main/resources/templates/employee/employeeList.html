@@ -53,7 +53,7 @@
     <div class="employee-list">
         <div class="section-title">■社員一覧</div>
         <div class="right-align">
-            件数：<span th:text="${#lists.size(employeeList)}">0</span>件 <span class="spaced"></span>
+            件数：<span th:text="${pageInfo.total}">0</span>件 <span class="spaced"></span>
             <button type="button" th:attr="data-url=@{/employee/register}" onclick="location.href=this.getAttribute('data-url')">新規登録</button>
         </div>
 
@@ -70,7 +70,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr th:each="emp : ${employeeList}">
+                <tr th:each="emp : ${pageInfo.list}">
                     <td th:text="${emp.companyName != null ? emp.companyName : '-'}"></td>
                     <td th:text="${emp.lastNameKanji + ' ' + emp.firstNameKanji}"></td>
                     <td th:text="${emp.seibetu == 1 ? '男性' : (emp.seibetu == 2 ? '女性' : '-')}"></td>
@@ -95,11 +95,47 @@
                         </form>
                     </td>
                 </tr>
-                <tr th:if="${#lists.isEmpty(employeeList)}">
+                <tr th:if="${pageInfo.total == 0}">
                     <td colspan="7">データが存在しません。</td>
                 </tr>
             </tbody>
         </table>
+
+        <!-- ページングナビゲーション。1ページの場合も余白確保のため常に表示する。 -->
+        <div class="pagination">
+            <a th:if="${pageInfo.hasPreviousPage}"
+               th:href="@{/employee/list(searched=true,
+                   syozokuKaisya=${searchDto.syozokuKaisya},
+                   employeeName=${searchDto.employeeName},
+                   syokugyoKind=${searchDto.syokugyoKind},
+                   working=${searchDto.working},
+                   notWorking=${searchDto.notWorking},
+                   pageNum=${pageInfo.prePage})}"
+               class="page-link">&lt;</a>
+
+            <th:block th:each="page : ${pageInfo.navigatepageNums}">
+                <a th:if="${page != pageInfo.pageNum}"
+                   th:href="@{/employee/list(searched=true,
+                       syozokuKaisya=${searchDto.syozokuKaisya},
+                       employeeName=${searchDto.employeeName},
+                       syokugyoKind=${searchDto.syokugyoKind},
+                       working=${searchDto.working},
+                       notWorking=${searchDto.notWorking},
+                       pageNum=${page})}"
+                   th:text="${page}" class="page-link"></a>
+                <span th:if="${page == pageInfo.pageNum}" th:text="${page}" class="page-link page-current"></span>
+            </th:block>
+
+            <a th:if="${pageInfo.hasNextPage}"
+               th:href="@{/employee/list(searched=true,
+                   syozokuKaisya=${searchDto.syozokuKaisya},
+                   employeeName=${searchDto.employeeName},
+                   syokugyoKind=${searchDto.syokugyoKind},
+                   working=${searchDto.working},
+                   notWorking=${searchDto.notWorking},
+                   pageNum=${pageInfo.nextPage})}"
+               class="page-link">&gt;</a>
+        </div>
     </div>
 </div>
 

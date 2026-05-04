@@ -228,3 +228,39 @@ button:hover {
     color: #666;
     font-size: 0.95em;
 }
+
+/* ログイン画面 */
+.login-box {
+    max-width: 260px;
+    margin: 120px auto 0;
+}
+
+/* ページングナビゲーション */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    margin-top: 16px;
+}
+
+.page-link {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1px solid #BDD7EE;
+    border-radius: 3px;
+    color: #1a6496;
+    text-decoration: none;
+    background-color: #fff;
+}
+
+.page-link:hover {
+    background-color: #BDD7EE;
+}
+
+.page-current {
+    background-color: #4A90B8;
+    color: #fff;
+    border-color: #4A90B8;
+    cursor: default;
+}

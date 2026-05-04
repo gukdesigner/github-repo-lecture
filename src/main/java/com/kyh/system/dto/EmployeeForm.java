@@ -9,7 +9,12 @@ import javax.validation.constraints.Size;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import lombok.Getter;
+import lombok.Setter;
+
 // 社員登録・更新画面の入力値を受け取るフォーム専用 DTO
+@Getter
+@Setter
 public class EmployeeForm {
 
     // テーブルの主キー。更新・削除時の識別に使用する。
@@ -126,69 +131,4 @@ public class EmployeeForm {
     // 設計書 §2.7 給与口座 No7: 50文字以内
     @Size(max = 50, message = "名義人名は50文字以下で入力してください。")
     private String meigiName;
-
-    // ---- getter / setter ----
-
-    public Integer getSyainId() { return syainId; }
-    public void setSyainId(Integer syainId) { this.syainId = syainId; }
-
-    public String getEmployeecode() { return employeecode; }
-    public void setEmployeecode(String employeecode) { this.employeecode = employeecode; }
-
-    public String getLastNameKanji() { return lastNameKanji; }
-    public void setLastNameKanji(String lastNameKanji) { this.lastNameKanji = lastNameKanji; }
-
-    public String getFirstNameKanji() { return firstNameKanji; }
-    public void setFirstNameKanji(String firstNameKanji) { this.firstNameKanji = firstNameKanji; }
-
-    public String getLastNameKana() { return lastNameKana; }
-    public void setLastNameKana(String lastNameKana) { this.lastNameKana = lastNameKana; }
-
-    public String getFirstNameKana() { return firstNameKana; }
-    public void setFirstNameKana(String firstNameKana) { this.firstNameKana = firstNameKana; }
-
-    public String getFirstNameEigo() { return firstNameEigo; }
-    public void setFirstNameEigo(String firstNameEigo) { this.firstNameEigo = firstNameEigo; }
-
-    public String getLastNameEigo() { return lastNameEigo; }
-    public void setLastNameEigo(String lastNameEigo) { this.lastNameEigo = lastNameEigo; }
-
-    public Integer getSeibetu() { return seibetu; }
-    public void setSeibetu(Integer seibetu) { this.seibetu = seibetu; }
-
-    public Integer getSyozokuKaisya() { return syozokuKaisya; }
-    public void setSyozokuKaisya(Integer syozokuKaisya) { this.syozokuKaisya = syozokuKaisya; }
-
-    public LocalDate getNyuusyaDate() { return nyuusyaDate; }
-    public void setNyuusyaDate(LocalDate nyuusyaDate) { this.nyuusyaDate = nyuusyaDate; }
-
-    public LocalDate getTaisyaDate() { return taisyaDate; }
-    public void setTaisyaDate(LocalDate taisyaDate) { this.taisyaDate = taisyaDate; }
-
-    public Integer getSyokugyoKind() { return syokugyoKind; }
-    public void setSyokugyoKind(Integer syokugyoKind) { this.syokugyoKind = syokugyoKind; }
-
-    public String getItOs() { return itOs; }
-    public void setItOs(String itOs) { this.itOs = itOs; }
-
-    public String getKinyukikanCode() { return kinyukikanCode; }
-    public void setKinyukikanCode(String kinyukikanCode) { this.kinyukikanCode = kinyukikanCode; }
-
-    public String getKinyukikanName() { return kinyukikanName; }
-    public void setKinyukikanName(String kinyukikanName) { this.kinyukikanName = kinyukikanName; }
-
-    public String getSitenCode() { return sitenCode; }
-    public void setSitenCode(String sitenCode) { this.sitenCode = sitenCode; }
-
-    public String getSitenName() { return sitenName; }
-    public void setSitenName(String sitenName) { this.sitenName = sitenName; }
-
-    public Integer getKouzaKind() { return kouzaKind; }
-    public void setKouzaKind(Integer kouzaKind) { this.kouzaKind = kouzaKind; }
-
-    public String getKouzaNum() { return kouzaNum; }
-    public void setKouzaNum(String kouzaNum) { this.kouzaNum = kouzaNum; }
-
-    public String getMeigiName() { return meigiName; }
-    public void setMeigiName(String meigiName) { this.meigiName = meigiName; }
 }

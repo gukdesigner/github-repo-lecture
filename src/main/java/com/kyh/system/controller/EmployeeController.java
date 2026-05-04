@@ -5,6 +5,9 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +44,9 @@ public class EmployeeController {
     // 登録フォームの性別初期値（1: 男性）
     private static final int DEFAULT_SEIBETU = 1;
 
+    // 社員一覧の1ページあたりの表示件数
+    private static final int PAGE_SIZE = 10;
+
     @Autowired
     private EmployeeService employeeService;
 
@@ -51,9 +57,11 @@ public class EmployeeController {
     //   ③ searched フラグがない初回表示のみ、在職中・ITエンジニア（code=4）を既定条件にセット
     //      searched=true は検索フォームの hidden から送信され、ユーザー操作による検索と区別する
     //   ④ 在職／非在職チェックの有効性検証
-    //   ⑤ 検索条件で syain_main を SELECT → employeeList として画面に渡す
+    //   ⑤ PageHelper でページング設定 → 検索条件で syain_main を SELECT → PageInfo として画面に渡す
     @GetMapping("/list")
-    public String list(@ModelAttribute("searchDto") EmployeeSearchDto searchDto, HttpSession session, Model model) {
+    public String list(@ModelAttribute("searchDto") EmployeeSearchDto searchDto,
+                       @RequestParam(defaultValue = "1") int pageNum,
+                       HttpSession session, Model model) {
         try {
             List<TgSetting> jobTypeList = employeeService.getJobTypeList();
 
@@ -66,11 +74,14 @@ public class EmployeeController {
 
             if (!employeeService.isValidWorkingFilter(searchDto.getWorking(), searchDto.getNotWorking())) {
                 model.addAttribute("errorMessage", "在籍と非在籍がいずれにしても、１つのチェックが必須です。");
-                model.addAttribute("employeeList", java.util.Collections.emptyList());
+                model.addAttribute("pageInfo", PageInfo.emptyPageInfo());
                 return "employee/employeeList";
             }
 
-            model.addAttribute("employeeList", employeeService.getEmployeeSearchList(searchDto));
+            PageHelper.startPage(pageNum, PAGE_SIZE);
+            PageInfo<com.kyh.system.dto.EmployeeListDto> pageInfo =
+                new PageInfo<>(employeeService.getEmployeeSearchList(searchDto));
+            model.addAttribute("pageInfo", pageInfo);
             return "employee/employeeList";
         } catch (Exception e) {
             logger.error("社員一覧の取得中にエラーが発生しました。", e);
@@ -266,16 +277,12 @@ public class EmployeeController {
         return "redirect:/employee/list";
     }
 
-    // セッションからログインユーザー情報を取得する
-    private UserAuth getLoginUser(HttpSession session) {
-        return (UserAuth) session.getAttribute("loginUser");
-    }
-
     // セッションからログインユーザーのロールを取得する。
     // 未定義ロールは D（最小権限）として扱う。
     // 未ログインアクセスは LoginInterceptor で /login へリダイレクトされる前提。
     private UserRole getRole(HttpSession session) {
-        UserRole role = UserRole.from(getLoginUser(session).getUserRole());
+        UserAuth loginUser = (UserAuth) session.getAttribute("loginUser");
+        UserRole role = UserRole.from(loginUser.getUserRole());
         return role != null ? role : UserRole.D;
     }
 
