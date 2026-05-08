@@ -5,9 +5,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.kyh.system.auth.UserRole;
 import com.kyh.system.dto.EmployeeForm;
 import com.kyh.system.dto.EmployeeSearchDto;
@@ -48,7 +47,11 @@ public class EmployeeController {
     private static final int PAGE_SIZE = 10;
 
     @Autowired
-    private EmployeeService employeeService;
+    private final EmployeeService employeeService;
+
+    public EmployeeController(EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
 
     // 社員一覧画面を表示する。
     // 【処理フロー】
