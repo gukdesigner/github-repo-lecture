@@ -3,7 +3,6 @@ package com.kyh.system.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +25,14 @@ import com.kyh.system.service.LoginService.LoginResult;
 @Controller
 public class LoginController {
 
-    @Autowired
-    private LoginService loginService;
+// Spring Boot はコンストラクタが1つの場合、自動的に依存関係を注入する
+// @Autowired を明示しなくてよいのは Spring Boot の機能による
+// final により、起動後に依存先が差し替えられないことを保証する
+    private final LoginService loginService;
+    
+    public LoginController(LoginService loginService) {
+        this.loginService = loginService;
+    }
 
     // ルートアクセス時はログイン画面へリダイレクトする
     @GetMapping({"/", "/index", "/employee"})
