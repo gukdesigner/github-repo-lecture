@@ -27,12 +27,23 @@ import com.kyh.system.service.EmployeeService;
 // フェーズを明確に分けることで「何をテストしているか」が一目でわかる
 public class EmployeeControllerEditTest {
 
+    // このテストクラスの読み方（フローと分岐）：
+    // 1) 権限チェック分岐（Cロールは更新不可）
+    // 2) 入力チェック分岐（syainId null / BindingResult エラー）
+    // 3) 更新結果分岐（変更なし / 例外 / 成功）
+    // 上から順に読むと、edit処理の主要分岐を一通り追える構成になっている。
+
+    // LoginControllerTest と同様に Given-When-Then 命名へ統一する理由：
+    // - 権限・バリデーション・例外など分岐の意図を、テスト名だけで把握しやすくするため
+    // - AAA の各フェーズとテスト名の意味を一致させ、保守時の読みやすさを上げるため
+
+
     private EmployeeController controller;
     private EmployeeService employeeService;
 
     private HttpSession session;
     private Model model;
-    private RedirectAttributes ra;
+    private RedirectAttributes redirectAttributes;
     private BindingResult bindingResult;
 
     // 【Arrange の共通部分】
@@ -44,7 +55,7 @@ public class EmployeeControllerEditTest {
         controller = new EmployeeController(employeeService);
         session = mock(HttpSession.class);
         model = new ConcurrentModel();
-        ra = mock(RedirectAttributes.class);
+        redirectAttributes = mock(RedirectAttributes.class);
         bindingResult = mock(BindingResult.class);
     }
 
@@ -63,43 +74,51 @@ public class EmployeeControllerEditTest {
         return form;
     }
 
-    // 1. 権限なし
+    // 1. 権限なし（最初の分岐）
+    // role=C の場合は更新処理に進まず、一覧へ戻す
     @Test
-    public void testEdit_noPermission() {
+    // テスト観点: 更新権限がない場合は一覧へ戻り権限エラーになること
+    public void givenNoUpdatePermission_whenEdit_thenRedirectToListWithError() {
 
         // Arrange: 更新権限のないロール（C）をセットする
         setRole("C");
         EmployeeForm form = validForm(1);
         when(bindingResult.hasErrors()).thenReturn(false);
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
-        String result = controller.edit(form, bindingResult, session, model, ra);
+        String result = controller.edit(form, bindingResult, session, model, redirectAttributes);
 
         // Assert: 一覧画面へリダイレクトされ、エラーメッセージがセットされることを確認する
         assertEquals("redirect:/employee/list", result);
-        verify(ra).addFlashAttribute("errorMessage", "更新権限がありません。");
+        verify(redirectAttributes).addFlashAttribute("errorMessage", "更新権限がありません。");
     }
 
-    // 2. syainId null
+    // 2. syainId null（入力不正分岐）
+    // 権限OKでも主キー不正なら更新せずエラー返却
     @Test
-    public void testEdit_nullSyainId() {
+    // テスト観点: 社員IDがnullなら更新せずエラーで一覧へ戻ること
+    public void givenNullSyainId_whenEdit_thenRedirectToListWithError() {
 
         // Arrange: 権限はあるが syainId が null のフォームを用意する
         setRole("S");
         EmployeeForm form = new EmployeeForm(); // syainId = null
         when(bindingResult.hasErrors()).thenReturn(false);
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
-        String result = controller.edit(form, bindingResult, session, model, ra);
+        String result = controller.edit(form, bindingResult, session, model, redirectAttributes);
 
         // Assert: 一覧画面へリダイレクトされ、不正エラーメッセージがセットされることを確認する
         assertEquals("redirect:/employee/list", result);
-        verify(ra).addFlashAttribute("errorMessage", "社員IDが不正です。再度お試しください。");
+        verify(redirectAttributes).addFlashAttribute("errorMessage", "社員IDが不正です。再度お試しください。");
     }
 
-    // 3. バリデーションエラー
+    // 3. バリデーションエラー（入力検証分岐）
+    // 入力エラー時は更新を行わず編集画面を再表示
     @Test
-    public void testEdit_validationError() {
+    // テスト観点: バリデーションエラー時は編集画面を再表示すること
+    public void givenValidationErrors_whenEdit_thenReturnEditPage() {
 
         // Arrange: バリデーションエラーが発生する状態を準備する
         setRole("S");
@@ -109,16 +128,19 @@ public class EmployeeControllerEditTest {
         when(employeeService.getCompanyList()).thenReturn(Collections.emptyList());
         when(employeeService.getJobTypeList()).thenReturn(Collections.emptyList());
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
-        String result = controller.edit(form, bindingResult, session, model, ra);
+        String result = controller.edit(form, bindingResult, session, model, redirectAttributes);
 
         // Assert: 更新画面に戻ることを確認する
         assertEquals("employee/employeeEdit", result);
     }
 
-    // 4. 変更なし
+    // 4. 変更なし（更新結果分岐）
+    // updateEmployee=false の場合は「変更項目なし」として編集画面へ戻す
     @Test
-    public void testEdit_noChanges() {
+    // テスト観点: 変更項目なしなら編集画面へ戻しエラー表示すること
+    public void givenNoChangedFields_whenEdit_thenRedirectBackToEditWithError() {
 
         // Arrange: 更新処理が「変更なし」を返す状態を準備する
         setRole("S");
@@ -126,17 +148,20 @@ public class EmployeeControllerEditTest {
         when(bindingResult.hasErrors()).thenReturn(false);
         when(employeeService.updateEmployee(any())).thenReturn(false);
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
-        String result = controller.edit(form, bindingResult, session, model, ra);
+        String result = controller.edit(form, bindingResult, session, model, redirectAttributes);
 
         // Assert: 編集画面へリダイレクトされ、変更なしエラーがセットされることを確認する
         assertEquals("redirect:/employee/edit/1", result);
-        verify(ra).addFlashAttribute("errorMessage", "社員変更項目がありません。");
+        verify(redirectAttributes).addFlashAttribute("errorMessage", "社員変更項目がありません。");
     }
 
-    // 5. DB例外
+    // 5. DB例外（例外分岐）
+    // サービス例外発生時はシステムエラー画面へ遷移
     @Test
-    public void testEdit_dbException() {
+    // テスト観点: 更新中例外発生時はシステムエラー画面へ遷移すること
+    public void givenDatabaseException_whenEdit_thenReturnSystemErrorPage() {
 
         // Arrange: DB更新時に例外が発生する状態を準備する
         setRole("S");
@@ -144,16 +169,19 @@ public class EmployeeControllerEditTest {
         when(bindingResult.hasErrors()).thenReturn(false);
         when(employeeService.updateEmployee(any())).thenThrow(new RuntimeException("DB error"));
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
-        String result = controller.edit(form, bindingResult, session, model, ra);
+        String result = controller.edit(form, bindingResult, session, model, redirectAttributes);
 
         // Assert: システムエラー画面に遷移することを確認する
         assertEquals("employee/systemError", result);
     }
 
-    // 6. 正常更新成功
+    // 6. 正常更新成功（成功分岐）
+    // 更新成功時は完了画面へ遷移し、成功メッセージを設定
     @Test
-    public void testEdit_success() {
+    // テスト観点: 正常更新時は完了画面へ遷移し成功メッセージを設定すること
+    public void givenValidInput_whenEdit_thenRedirectToCompleteWithSuccessMessage() {
 
         // Arrange: 更新処理が成功する状態を準備する
         setRole("S");
@@ -161,11 +189,12 @@ public class EmployeeControllerEditTest {
         when(bindingResult.hasErrors()).thenReturn(false);
         when(employeeService.updateEmployee(any())).thenReturn(true);
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
-        String result = controller.edit(form, bindingResult, session, model, ra);
+        String result = controller.edit(form, bindingResult, session, model, redirectAttributes);
 
         // Assert: 完了画面へリダイレクトされ、成功メッセージがセットされることを確認する
         assertEquals("redirect:/employee/complete", result);
-        verify(ra).addFlashAttribute("successMessage", "社員情報を更新しました。");
+        verify(redirectAttributes).addFlashAttribute("successMessage", "社員情報を更新しました。");
     }
 }

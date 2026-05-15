@@ -23,6 +23,18 @@ import com.kyh.system.service.LoginService.LoginResult;
 // フェーズを明確に分けることで「何をテストしているか」が一目でわかる
 public class LoginControllerTest {
 
+    // このテストクラスの読み方（フローと分岐）：
+    // 1) 成功分岐（正常ログインでセッション再発行）
+    // 2) 失敗分岐（入力不備・認証失敗でログイン画面へ戻す）
+    // 先頭の成功ケースを基準に、以降の失敗ケース差分を見ると理解しやすい。
+
+    // Given-When-Then 命名を使う理由：
+    // - Given(前提) / When(操作) / Then(期待結果) がテスト名だけで読める
+    // - 失敗ログから「どの条件で何が期待されたか」を直感的に把握できる
+    // - AAA（Arrange/Act/Assert）と意味が対応し、レビュー時の認知負荷を下げられる
+
+    private static final String LOGIN_ERROR_MESSAGE = "ユーザーIDまたはパスワードが違います";
+
     private LoginController controller;
     private LoginService loginService;
 
@@ -37,169 +49,194 @@ public class LoginControllerTest {
     @BeforeEach
     public void setUp() {
         loginService = mock(LoginService.class);
-        
-     // テスト用モックをコンストラクタ経由で注入する
-     // フィールドへの直接アクセスが不要になり、private final を維持できる
+
+        // テスト用モックをコンストラクタ経由で注入する
+        // フィールドへの直接アクセスが不要になり、private final を維持できる
         controller = new LoginController(loginService);
-        
+
         request = mock(HttpServletRequest.class);
         oldSession = mock(HttpSession.class);
         newSession = mock(HttpSession.class);
         model = new ConcurrentModel();
     }
 
-    // 1. 正常なログイン
-    @Test
-    public void testLogin_successful() {
+    // ログイン失敗ケース用の Arrange を共通化するヘルパー
+    private void arrangeFailedLogin(String userId, String password) {
+        when(loginService.login(userId, password)).thenReturn(LoginResult.failure(LOGIN_ERROR_MESSAGE));
+    }
 
-        // Arrange: ログイン成功を返すモックと、新セッションを準備する
+    @Test
+    // テスト観点: 正常な認証情報なら社員一覧へ遷移し、セッション再発行されること
+    public void givenValidCredentials_whenLogin_thenRedirectToEmployeeList() {
+
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
+        // Arrange
         UserAuth user = new UserAuth();
-        when(loginService.login("testuser", "password123"))
-                .thenReturn(LoginResult.success(user));
+        when(loginService.login("testuser", "password123")).thenReturn(LoginResult.success(user));
         when(request.getSession(true)).thenReturn(newSession);
 
-        // Act: ログインメソッドを実行する
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
+        // Act
         String result = controller.login("testuser", "password123", request, oldSession, model);
 
-        // Assert: 社員一覧へリダイレクトされ、セッションが正しく再発行されることを確認する
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
+        // Assert
         assertEquals("redirect:/employee/list", result);
         verify(oldSession).invalidate();
         verify(newSession).setAttribute("loginUser", user);
     }
 
-    // 2. パスワード未入力
     @Test
-    public void testLogin_emptyPassword() {
+    // テスト観点: パスワード空文字ならログイン画面に戻りエラー表示されること
+    public void givenEmptyPassword_whenLogin_thenReturnLoginPageWithError() {
 
-        // Arrange: パスワード空文字でサービスが失敗を返すよう設定する
-        when(loginService.login("testuser", ""))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
+        // Arrange
+        arrangeFailedLogin("testuser", "");
 
-        // Act: 空パスワードでログインを試みる
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
+        // Act
         String result = controller.login("testuser", "", request, oldSession, model);
 
-        // Assert: ログイン画面に戻り、エラーメッセージがセットされ、セッションが無効化されないことを確認する
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
+        // Assert
         assertEquals("employee/employeeLogin", result);
-        assertEquals("ユーザーIDまたはパスワードが違います", model.getAttribute("error"));
+        assertEquals(LOGIN_ERROR_MESSAGE, model.getAttribute("error"));
         verify(oldSession, never()).invalidate();
     }
 
-    // 3. パスワードnull
     @Test
-    public void testLogin_nullPassword() {
+    // テスト観点: パスワードnullならログイン失敗画面になること
+    public void givenNullPassword_whenLogin_thenReturnLoginPage() {
 
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
         // Arrange
-        when(loginService.login("testuser", null))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        arrangeFailedLogin("testuser", null);
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
         String result = controller.login("testuser", null, request, oldSession, model);
 
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
         // Assert
         assertEquals("employee/employeeLogin", result);
     }
 
-    // 4. ユーザーID未入力
     @Test
-    public void testLogin_emptyUserId() {
+    // テスト観点: ユーザーID空文字ならログイン失敗画面になること
+    public void givenEmptyUserId_whenLogin_thenReturnLoginPage() {
 
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
         // Arrange
-        when(loginService.login("", "password123"))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        arrangeFailedLogin("", "password123");
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
         String result = controller.login("", "password123", request, oldSession, model);
 
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
         // Assert
         assertEquals("employee/employeeLogin", result);
     }
 
-    // 5. ユーザーIDnull
     @Test
-    public void testLogin_nullUserId() {
+    // テスト観点: ユーザーIDnullならログイン失敗画面になること
+    public void givenNullUserId_whenLogin_thenReturnLoginPage() {
 
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
         // Arrange
-        when(loginService.login(null, "password123"))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        arrangeFailedLogin(null, "password123");
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
         String result = controller.login(null, "password123", request, oldSession, model);
 
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
         // Assert
         assertEquals("employee/employeeLogin", result);
     }
 
-    // 6. ユーザーIDが数字のみ
     @Test
-    public void testLogin_userIdNumericOnly() {
+    // テスト観点: 数字のみIDは認証失敗として扱われること
+    public void givenNumericOnlyUserId_whenLogin_thenReturnLoginPage() {
 
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
         // Arrange
-        when(loginService.login("123456", "password123"))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        arrangeFailedLogin("123456", "password123");
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
         String result = controller.login("123456", "password123", request, oldSession, model);
 
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
         // Assert
         assertEquals("employee/employeeLogin", result);
     }
 
-    // 7. ユーザーIDにアンダースコア
     @Test
-    public void testLogin_userIdWithUnderscore() {
+    // テスト観点: アンダースコアを含むIDは認証失敗として扱われること
+    public void givenUserIdWithUnderscore_whenLogin_thenReturnLoginPage() {
 
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
         // Arrange
-        when(loginService.login("admin_user", "password123"))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        arrangeFailedLogin("admin_user", "password123");
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
         String result = controller.login("admin_user", "password123", request, oldSession, model);
 
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
         // Assert
         assertEquals("employee/employeeLogin", result);
     }
 
-    // 8. ユーザーIDが日本語
     @Test
-    public void testLogin_userIdInJapanese() {
+    // テスト観点: 日本語IDは認証失敗として扱われること
+    public void givenJapaneseUserId_whenLogin_thenReturnLoginPage() {
 
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
         // Arrange
-        when(loginService.login("テスト", "password123"))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        arrangeFailedLogin("テスト", "password123");
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
         String result = controller.login("テスト", "password123", request, oldSession, model);
 
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
         // Assert
         assertEquals("employee/employeeLogin", result);
     }
 
-    // 9. パスワード間違い
     @Test
-    public void testLogin_wrongPassword() {
+    // テスト観点: 誤ったパスワードではログインできないこと
+    public void givenWrongPassword_whenLogin_thenReturnLoginPage() {
 
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
         // Arrange
-        when(loginService.login("testuser", "wrongpass"))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        arrangeFailedLogin("testuser", "wrongpass");
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
         String result = controller.login("testuser", "wrongpass", request, oldSession, model);
 
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
         // Assert
         assertEquals("employee/employeeLogin", result);
     }
 
-    // 10. 存在しないユーザーID
     @Test
-    public void testLogin_userNotFound() {
+    // テスト観点: 存在しないユーザーIDではログインできないこと
+    public void givenUnknownUserId_whenLogin_thenReturnLoginPage() {
 
+        // 前提: このケースで使う入力値とモックの戻り値を準備する
         // Arrange
-        when(loginService.login("nonexistent", "anything"))
-                .thenReturn(LoginResult.failure("ユーザーIDまたはパスワードが違います"));
+        arrangeFailedLogin("nonexistent", "anything");
 
+        // 操作: 準備した条件で対象メソッドを1回だけ実行する
         // Act
         String result = controller.login("nonexistent", "anything", request, oldSession, model);
 
+        // 期待結果: 画面遷移・メッセージ・副作用が想定どおりか確認する
         // Assert
         assertEquals("employee/employeeLogin", result);
     }
